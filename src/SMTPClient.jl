@@ -1,12 +1,11 @@
 module SMTPClient
 
 using LibCURL
-using LibCURL.Mime_ext
 
-import Base.convert, Base.show, Base.get, Base.put, Base.trace
+import Base.convert, Base.show
 
-export init, cleanup, get, put, post, trace, delete, head, options
-export RequestOptions, Response
+export send
+export SendOptions, SendResponse
 
 def_rto = 0.0
 
@@ -14,27 +13,27 @@ def_rto = 0.0
 # Struct definitions
 ##############################
 
-type RequestOptions
+type SendOptions
     blocking::Bool  
     isSSL::Bool
     username::String
     passwd::String 
     
-    RequestOptions(; blocking=true,isSSL=false,  username="", passwd="", ) = 
+    SendOptions(; blocking=true,isSSL=false,  username="", passwd="", ) = 
     new(blocking, isSSL, username, passwd)
 end
 
-type Response
+type SendResponse
     body::IO
     code::Int 
     total_time::Float64  
-    Response() = new(IOBuffer(), 0, 0.0)
+    SendResponse() = new(IOBuffer(), 0, 0.0)
 end
 
-function show(io::IO, o::Response)
+function show(io::IO, o::SendResponse)
     println(io, "Return Code   :", o.code)
     println(io, "Time :", o.total_time)
-    println(io, "Response", takebuf_string(o.body))
+    println(io, "Response:", takebuf_string(o.body))
 end 
 
 
@@ -52,12 +51,12 @@ type ConnContext
     curl::Ptr{CURL}
     url::String
     rd::ReadData
-    resp::Response
-    options::RequestOptions
+    resp::SendResponse
+    options::SendOptions
     close_ostream::Bool
     bytes_recd::Integer    
     
-    ConnContext(options::RequestOptions) = new(C_NULL, " ", ReadData(), Response(), options, false, 0)
+    ConnContext(options::SendOptions) = new(C_NULL, " ", ReadData(), SendResponse(), options, false, 0)
 end
 
 
@@ -148,7 +147,7 @@ end
 
 null_cb(curl) = return nothing
 
-function set_opt_blocking(options::RequestOptions)
+function set_opt_blocking(options::SendOptions)
         o2 = deepcopy(options)
         o2.blocking = true
         return o2
@@ -156,7 +155,7 @@ end
 
 
 
-function setup_easy_handle(url, options::RequestOptions)
+function setup_easy_handle(url, options::SendOptions)
     ctxt = ConnContext(options)
     
     curl = curl_easy_init()
@@ -223,7 +222,7 @@ end
 init() = curl_global_init(CURL_GLOBAL_ALL)
 cleanup() = curl_global_cleanup()
 
-function send (url::String, to::Vector, from::String, body::IO, options::RequestOptions=RequestOptions())
+function send (url::String, to::Vector, from::String, body::IO, options::SendOptions=SendOptions())
 	if (options.blocking)
         rd::ReadData = ReadData()
     
@@ -243,7 +242,7 @@ end
 
 
 
-function _do_send(url::String, to::Vector, from::String, options::RequestOptions, rd::ReadData)
+function _do_send(url::String, to::Vector, from::String, options::SendOptions, rd::ReadData)
     ctxt = false
     slist::Ptr{Void} = C_NULL
     try
