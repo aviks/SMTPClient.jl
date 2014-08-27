@@ -1,6 +1,8 @@
 # SMTPClient
 
-A [CURL](curl.haxx.s) based SMTP client. It is useful for sending emails from Julia code. Depends on [LibCURL.jl](https://github.com/amitmurthy/LibCURL.jl/). 
+[![Build Status](https://travis-ci.org/JuliaWeb/SMTPClient.jl.svg?branch=master)](https://travis-ci.org/JuliaWeb/SMTPClient.jl)
+
+A [CURL](curl.haxx.s) based SMTP client with fairly low level API. It is useful for sending emails from within Julia code. Depends on [LibCURL.jl](https://github.com/amitmurthy/LibCURL.jl/). 
 
 ##Installation
 
@@ -24,11 +26,12 @@ SMTPClient.cleanup()
 
 `send(url, to-addresses, from-address, message-body, options)`
     
-send an email. `url` should be of the form `smtp://server:port`. 
-Authentication information (ie, username/password) is provided via the `SendOption`. 
-So is the option of whether the server requires TLS. 
-`to-address` is a one dimensional array of Strings. `from-address` is a String. All addresses must be enclosed in angle brackets.
-`message-body` must be a RFC5322 formatted message body provided via an IO. 
+send an email. 
+   * `url` should be of the form `smtp://server:port`. 
+   * `to-address` is a one dimensional array of Strings. 
+   * `from-address` is a String. All addresses must be enclosed in angle brackets.
+   * `message-body` must be a RFC5322 formatted message body provided via an `IO`. 
+   * `options` is an object of type `SendOptions`. It contains uthentication information, as well as the option of whether the server requires TLS. 
 
 
 
@@ -38,7 +41,7 @@ Options are passed via the `SendOptions` constructor that takes keyword argument
 If the username is blank, the password is not sent even if present. If `blocking` is set to fall, the `send` function
 is executed via a `RemoteCall` to the current node. 
 
-`SMTPClient.init()` and `SMTPClient.cleanup`
+`SMTPClient.init()` and `SMTPClient.cleanup()`
 
 These are global functions that need to be used only once per session. Data created during a single call to `send`
 is cleaned up autmatically before the function returns. Also, note that no keepalive is implemented. New connections
