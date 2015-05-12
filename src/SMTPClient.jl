@@ -170,6 +170,7 @@ function setup_easy_handle(url, options::SendOptions)
 
     @ce_curl curl_easy_setopt CURLOPT_URL url
     @ce_curl curl_easy_setopt CURLOPT_WRITEFUNCTION c_write_cb
+    @ce_curl curl_easy_setopt CURLOPT_UPLOAD 1
     @ce_curl curl_easy_setopt CURLOPT_WRITEDATA p_ctxt
 
     if options.isSSL
