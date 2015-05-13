@@ -31,7 +31,7 @@ send an email.
    * `to-address` is a one dimensional array of Strings. 
    * `from-address` is a String. All addresses must be enclosed in angle brackets.
    * `message-body` must be a RFC5322 formatted message body provided via an `IO`. 
-   * `options` is an object of type `SendOptions`. It contains uthentication information, as well as the option of whether the server requires TLS. 
+   * `options` is an object of type `SendOptions`. It contains authentication information, as well as the option of whether the server requires TLS. 
 
 
 
