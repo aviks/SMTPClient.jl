@@ -2,6 +2,9 @@
 
 [![Build Status](https://travis-ci.org/JuliaWeb/SMTPClient.jl.svg?branch=master)](https://travis-ci.org/JuliaWeb/SMTPClient.jl)
 
+[![SMTPClient](http://pkg.julialang.org/badges/SMTPClient_0.3.svg)](http://pkg.julialang.org/?pkg=SMTPClient&ver=0.3)
+[![SMTPClient](http://pkg.julialang.org/badges/SMTPClient_0.4.svg)](http://pkg.julialang.org/?pkg=SMTPClient&ver=0.4)
+
 A [CURL](curl.haxx.s) based SMTP client with fairly low level API. It is useful for sending emails from within Julia code. Depends on [LibCURL.jl](https://github.com/amitmurthy/LibCURL.jl/). 
 
 ##Installation
