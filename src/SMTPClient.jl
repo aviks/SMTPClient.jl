@@ -14,19 +14,19 @@ def_rto = 0.0
 ##############################
 
 type SendOptions
-    blocking::Bool  
+    blocking::Bool
     isSSL::Bool
-    username::String
-    passwd::String 
-    
-    SendOptions(; blocking=true,isSSL=false,  username="", passwd="", ) = 
+    username::AbstractString
+    passwd::AbstractString
+
+    SendOptions(; blocking=true,isSSL=false,  username="", passwd="", ) =
     new(blocking, isSSL, username, passwd)
 end
 
 type SendResponse
     body::IO
-    code::Int 
-    total_time::Float64  
+    code::Int
+    total_time::Float64
     SendResponse() = new(IOBuffer(), 0, 0.0)
 end
 
@@ -34,13 +34,13 @@ function show(io::IO, o::SendResponse)
     println(io, "Return Code   :", o.code)
     println(io, "Time :", o.total_time)
     println(io, "Response:", takebuf_string(o.body))
-end 
+end
 
 
 type ReadData
     typ::Symbol
     src::Any
-    str::String
+    str::AbstractString
     offset::Csize_t
     sz::Csize_t
 
@@ -49,13 +49,13 @@ end
 
 type ConnContext
     curl::Ptr{CURL}
-    url::String
+    url::AbstractString
     rd::ReadData
     resp::SendResponse
     options::SendOptions
     close_ostream::Bool
-    bytes_recd::Integer    
-    
+    bytes_recd::Integer
+
     ConnContext(options::SendOptions) = new(C_NULL, " ", ReadData(), SendResponse(), options, false, 0)
 end
 
@@ -65,17 +65,17 @@ end
 # Callbacks
 ##############################
 
-function write_cb(buff::Ptr{Uint8}, sz::Csize_t, n::Csize_t, p_ctxt::Ptr{Void})
+function write_cb(buff::Ptr{UInt8}, sz::Csize_t, n::Csize_t, p_ctxt::Ptr{Void})
 #    println("@write_cb")
     ctxt = unsafe_pointer_to_objref(p_ctxt)
     nbytes = sz * n
     write(ctxt.resp.body, buff, nbytes)
     ctxt.bytes_recd = ctxt.bytes_recd + nbytes
-    
+
     nbytes::Csize_t
 end
 
-c_write_cb = cfunction(write_cb, Csize_t, (Ptr{Uint8}, Csize_t, Csize_t, Ptr{Void}))
+c_write_cb = cfunction(write_cb, Csize_t, (Ptr{UInt8}, Csize_t, Csize_t, Ptr{Void}))
 
 
 function curl_read_cb(out::Ptr{Void}, s::Csize_t, n::Csize_t, p_ctxt::Ptr{Void})
@@ -88,9 +88,9 @@ function curl_read_cb(out::Ptr{Void}, s::Csize_t, n::Csize_t, p_ctxt::Ptr{Void})
 
     if (ctxt.rd.typ == :buffer)
         ccall(:memcpy, Ptr{Void}, (Ptr{Void}, Ptr{Void}, Uint),
-                out, convert(Ptr{Uint8}, ctxt.rd.str) + ctxt.rd.offset, b2copy)
+                out, convert(Ptr{UInt8}, ctxt.rd.str) + ctxt.rd.offset, b2copy)
     elseif (ctxt.rd.typ == :io)
-        b_read = read(ctxt.rd.src, Uint8, b2copy)
+        b_read = read(ctxt.rd.src, UInt8, b2copy)
         ccall(:memcpy, Ptr{Void}, (Ptr{Void}, Ptr{Void}, Uint), out, b_read, b2copy)
     end
     ctxt.rd.offset = ctxt.rd.offset + b2copy
@@ -125,23 +125,23 @@ c_curl_multi_timer_cb = cfunction(curl_multi_timer_cb, Cint, (Ptr{Void}, Clong, 
 macro ce_curl (f, args...)
     quote
         cc = CURLE_OK
-        cc = $(esc(f))(ctxt.curl, $(args...)) 
-        
+        cc = $(esc(f))(ctxt.curl, $(args...))
+
         if(cc != CURLE_OK)
             error (string($f) * "() failed: " * bytestring(curl_easy_strerror(cc)))
         end
-    end    
+    end
 end
 
 macro ce_curlm (f, args...)
     quote
         cc = CURLM_OK
-        cc = $(esc(f))(curlm, $(args...)) 
-        
+        cc = $(esc(f))(curlm, $(args...))
+
         if(cc != CURLM_OK)
             error (string($f) * "() failed: " * bytestring(curl_multi_strerror(cc)))
         end
-    end    
+    end
 end
 
 
@@ -157,14 +157,14 @@ end
 
 function setup_easy_handle(url, options::SendOptions)
     ctxt = ConnContext(options)
-    
+
     curl = curl_easy_init()
     if (curl == C_NULL) throw("curl_easy_init() failed") end
 
     ctxt.curl = curl
 
     ctxt.url = url
-    
+
     p_ctxt = pointer_from_objref(ctxt)
 
 
@@ -175,13 +175,13 @@ function setup_easy_handle(url, options::SendOptions)
 
     if options.isSSL
     	@ce_curl curl_easy_setopt CURLOPT_USE_SSL CURLUSESSL_ALL
-    end 
+    end
 
     if length(options.username) > 0
     	@ce_curl curl_easy_setopt  CURLOPT_USERNAME options.username
     	@ce_curl curl_easy_setopt  CURLOPT_PASSWORD options.passwd
     end
-    
+
     ctxt
 end
 
@@ -191,7 +191,7 @@ function cleanup_easy_context(ctxt::Union(ConnContext,Bool))
         if (ctxt.curl != C_NULL)
             curl_easy_cleanup(ctxt.curl)
         end
-        
+
         if ctxt.close_ostream
             close(ctxt.resp.body)
             ctxt.resp.body = nothing
@@ -204,7 +204,7 @@ end
 function process_response(ctxt)
     http_code = Array(Int,1)
     @ce_curl curl_easy_getinfo CURLINFO_RESPONSE_CODE http_code
-    
+
     total_time = Array(Float64,1)
     @ce_curl curl_easy_getinfo CURLINFO_TOTAL_TIME total_time
 
@@ -223,13 +223,13 @@ end
 init() = curl_global_init(CURL_GLOBAL_ALL)
 cleanup() = curl_global_cleanup()
 
-function send (url::String, to::Vector, from::String, body::IO, options::SendOptions=SendOptions())
+function send (url::AbstractString, to::Vector, from::AbstractString, body::IO, options::SendOptions=SendOptions())
 	if (options.blocking)
         rd::ReadData = ReadData()
-    
+
 	        rd.typ = :io
 	        rd.src = body
-	        seekend(body)    
+	        seekend(body)
 	        rd.sz = position(body)
 	        seekstart(body)
 
@@ -243,7 +243,7 @@ end
 
 
 
-function _do_send(url::String, to::Vector, from::String, options::SendOptions, rd::ReadData)
+function _do_send(url::AbstractString, to::Vector, from::AbstractString, options::SendOptions, rd::ReadData)
     ctxt = false
     slist::Ptr{Void} = C_NULL
     try
@@ -257,15 +257,15 @@ function _do_send(url::String, to::Vector, from::String, options::SendOptions, r
         @ce_curl curl_easy_setopt CURLOPT_READFUNCTION c_curl_read_cb
 
 
-        
+
         for tos in to
     		slist = curl_slist_append(slist, tos)
     	end
-    
+
       	@ce_curl curl_easy_setopt CURLOPT_MAIL_RCPT slist
 
       	@ce_curl curl_easy_setopt CURLOPT_MAIL_FROM from
-    
+
 
         # return exec_as_multi(ctxt)
 
@@ -285,23 +285,23 @@ end
 function exec_as_multi(ctxt)
     curl = ctxt.curl
     curlm = curl_multi_init()
-    
+
     if (curlm == C_NULL) error("Unable to initialize curl_multi_init()") end
 
     try
         if isa(ctxt.options.callback, Function) ctxt.options.callback(curl) end
-    
+
         @ce_curlm curl_multi_add_handle curl
 
         n_active = Array(Int,1)
         n_active[1] = 1
-        
+
         no_to = 30 * 24 * 3600.0
         request_timeout = 0.001 + (ctxt.options.request_timeout == 0.0 ? no_to : ctxt.options.request_timeout)
-        
+
         started_at = time()
         time_left = request_timeout
-        
+
     # poll_fd is unreliable when multiple parallel fds are active, hence using curl_multi_perform
 
 
@@ -310,23 +310,23 @@ function exec_as_multi(ctxt)
         cmc = curl_multi_perform(curlm, n_active);
         while (n_active[1] > 0) &&  (time_left > 0)
             nb1 = ctxt.bytes_recd
-            cmc = curl_multi_perform(curlm, n_active);    
+            cmc = curl_multi_perform(curlm, n_active);
             if(cmc != CURLM_OK) error ("curl_multi_perform() failed: " * bytestring(curl_multi_strerror(cmc))) end
 
             nb2 = ctxt.bytes_recd
-            
+
             if (nb2 > nb1)
                 yield() # Just yield to other tasks
             else
                 sleep(0.005) # Just to prevent unnecessary CPU spinning
             end
-            
-            time_left = request_timeout - (time() - started_at)
-        end 
 
-# END OF curl_multi_perform       
-        
-        
+            time_left = request_timeout - (time() - started_at)
+        end
+
+# END OF curl_multi_perform
+
+
         if (n_active[1] == 0)
             msgs_in_queue = Array(Cint,1)
             p_msg::Ptr{CURLMsg2} = curl_multi_info_read(curlm, msgs_in_queue)
@@ -336,7 +336,7 @@ function exec_as_multi(ctxt)
                 msg = unsafe_load(p_msg)
 
                 if (msg.msg == CURLMSG_DONE)
-                    ec = convert(Int, msg.data) 
+                    ec = convert(Int, msg.data)
                     if (ec != CURLE_OK)
 #                        println("Result of transfer: " * string(msg.data))
                         throw("Error executing request : " * bytestring(curl_easy_strerror(ec)))
@@ -344,7 +344,7 @@ function exec_as_multi(ctxt)
                         process_response(ctxt)
                     end
                 end
-                
+
                 p_msg = curl_multi_info_read(curlm, msgs_in_queue)
             end
         else
@@ -355,8 +355,8 @@ function exec_as_multi(ctxt)
         curl_multi_remove_handle(curlm, curl)
         curl_multi_cleanup(curlm)
     end
-    
-    ctxt.resp    
+
+    ctxt.resp
 end
 
 
