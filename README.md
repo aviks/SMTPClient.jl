@@ -1,6 +1,17 @@
 # SMTPClient
 
-[![Build Status](https://travis-ci.org/JuliaWeb/SMTPClient.jl.svg?branch=master)](https://travis-ci.org/JuliaWeb/SMTPClient.jl)
+---
+
+> **2015-10-31**:
+> This package is deprecated, and does not have an active maintainer.
+> It is not recommended for use in new projects.
+> Commit access may be given to anyone interested in taking on reviving,
+> maintaining, or furthering development.
+> If you are interested, please submit a PR that updates the package.
+
+---
+
+[![Build Status](https://travis-ci.org/JuliaDeprecated/SMTPClient.jl.svg?branch=master)](https://travis-ci.org/JuliaWeb/SMTPClient.jl)
 
 [![SMTPClient](http://pkg.julialang.org/badges/SMTPClient_0.3.svg)](http://pkg.julialang.org/?pkg=SMTPClient&ver=0.3)
 [![SMTPClient](http://pkg.julialang.org/badges/SMTPClient_0.4.svg)](http://pkg.julialang.org/?pkg=SMTPClient&ver=0.4)
