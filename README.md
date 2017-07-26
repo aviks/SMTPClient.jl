@@ -1,31 +1,22 @@
 # SMTPClient
 
----
-
-> **2015-10-31**:
-> This package is deprecated, and does not have an active maintainer.
-> It is not recommended for use in new projects.
-> Commit access may be given to anyone interested in taking on reviving,
-> maintaining, or furthering development.
-> If you are interested, please submit a PR that updates the package.
-
----
-
-[![Build Status](https://travis-ci.org/JuliaDeprecated/SMTPClient.jl.svg?branch=master)](https://travis-ci.org/JuliaDeprecated/SMTPClient.jl)
+[![Build Status](https://travis-ci.org/aviks/SMTPClient.jl.svg)](https://travis-ci.org/aviks/SMTPClient.jl)
 
 [![SMTPClient](http://pkg.julialang.org/badges/SMTPClient_0.3.svg)](http://pkg.julialang.org/?pkg=SMTPClient&ver=0.3)
 [![SMTPClient](http://pkg.julialang.org/badges/SMTPClient_0.4.svg)](http://pkg.julialang.org/?pkg=SMTPClient&ver=0.4)
+[![SMTPClient](http://pkg.julialang.org/badges/SMTPClient_0.5.svg)](http://pkg.julialang.org/?pkg=SMTPClient&ver=0.5)
+[![SMTPClient](http://pkg.julialang.org/badges/SMTPClient_0.6.svg)](http://pkg.julialang.org/?pkg=SMTPClient&ver=0.6)
 
 A [CURL](curl.haxx.se) based SMTP client with fairly low level API. It is useful for sending emails from within Julia code. Depends on [LibCURL.jl](https://github.com/JuliaWeb/LibCURL.jl/). 
 
-##Installation
+## Installation
 
 ```julia
 Pkg.add("SMTPClient")
 ```
 The libCurl native library must be available. It is usually installed with the base system in most unix variants.
 
-##Usage
+## Usage
 ```julia
 using SMTPClient
 SMTPClient.init()
@@ -36,7 +27,7 @@ resp=send("smtp://smtp.gmail.com:587", ["<me@test.com>"], "<you@gmail.com>", bod
 SMTPClient.cleanup()
 ```
 
-##Function Reference
+## Function Reference
 
 `send(url, to-addresses, from-address, message-body, options)`
     
@@ -62,6 +53,3 @@ is cleaned up autmatically before the function returns. Also, note that no keepa
 to the SMTP server are created for each message. 
 
 
-<!---
-[![Build Status](https://travis-ci.org/aviks/SMTPClient.jl.png)](https://travis-ci.org/aviks/SMTPClient.jl)
--->
