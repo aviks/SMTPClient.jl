@@ -6,7 +6,7 @@ using SMTPClient
 @testset "Error message for Humans(TM)" begin
     let errmsg = "Couldn't resolve host name"
         o = SendOptions()
-        server = "smtp://noneists"
+        server = "smtp://nonexists"
         body = IOBuffer("test")
 
         try
