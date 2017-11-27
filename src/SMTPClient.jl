@@ -131,7 +131,7 @@ macro ce_curl(f, handle, args...)
 
         if cc != CURLE_OK
             err = unsafe_string(curl_easy_strerror(cc))
-            error(string($f) * "() failed: " * string(err))
+            error(string($f) * "() failed: " * err)
         end
     end
 end
@@ -143,7 +143,7 @@ macro ce_curlm(f, handle, args...)
 
         if(cc != CURLM_OK)
             err = unsafe_string(curl_multi_strerror(cc))
-            error(string($f) * "() failed: " * string(err))
+            error(string($f) * "() failed: " * err)
         end
     end
 end
