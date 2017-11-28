@@ -16,3 +16,18 @@ using SMTPClient
         end
     end
 end
+
+
+@testset "Non-blocking send" begin
+    let errmsg = "Couldn't resolve host name"
+        opt = SendOptions(blocking = false)
+        server = "smtp://nonexists"
+        body = IOBuffer("test")
+
+        future = send(server, ["nobody@earth"], "nobody@earth", body, opt)
+        @test future isa Future
+
+        e = fetch(future)
+        @test contains(string(e), errmsg)
+    end
+end
