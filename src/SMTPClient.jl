@@ -9,6 +9,18 @@ export SendOptions, SendResponse
 def_rto = 0.0
 
 ##############################
+# Module init/cleanup
+##############################
+
+function __init__()
+  curl_global_init(CURL_GLOBAL_ALL)
+
+  atexit() do
+    curl_global_cleanup()
+  end
+end
+
+##############################
 # Struct definitions
 ##############################
 
@@ -219,9 +231,6 @@ end
 ##############################
 # Library initializations
 ##############################
-
-init() = curl_global_init(CURL_GLOBAL_ALL)
-cleanup() = curl_global_cleanup()
 
 function send(url::AbstractString, to::Vector, from::AbstractString, body::IO,
               options::SendOptions = SendOptions())
