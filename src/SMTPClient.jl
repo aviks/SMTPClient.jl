@@ -2,9 +2,8 @@ module SMTPClient
 
 using LibCURL
 
-import Base.convert, Base.show
+import Base: convert, send, show
 
-export send
 export SendOptions, SendResponse
 
 def_rto = 0.0
@@ -225,8 +224,8 @@ init() = curl_global_init(CURL_GLOBAL_ALL)
 cleanup() = curl_global_cleanup()
 
 function send(url::AbstractString, to::Vector, from::AbstractString, body::IO,
-              options::SendOptions=SendOptions())
-    if (options.blocking)
+              options::SendOptions = SendOptions())
+    if options.blocking
         rd::ReadData = ReadData()
 
         rd.typ = :io
@@ -264,8 +263,6 @@ function _do_send(url::AbstractString, to::Vector, from::AbstractString,
 
         @ce_curl curl_easy_setopt ctxt.curl CURLOPT_MAIL_FROM from
 
-
-        # return exec_as_multi(ctxt)
 
         @ce_curl curl_easy_perform ctxt.curl
         process_response(ctxt)
