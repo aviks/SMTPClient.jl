@@ -30,7 +30,7 @@ mutable struct SendOptions
     username::AbstractString
     passwd::AbstractString
 
-    SendOptions(; blocking=true,isSSL=false,  username="", passwd="") =
+    SendOptions(; blocking = true, isSSL = false, username = "", passwd = "") =
         new(blocking, isSSL, username, passwd)
 end
 
@@ -38,6 +38,7 @@ mutable struct SendResponse
     body::IO
     code::Int
     total_time::Float64
+
     SendResponse() = new(IOBuffer(), 0, 0.0)
 end
 
@@ -52,7 +53,7 @@ end
 mutable struct ReadData
     typ::Symbol
     src::Any
-    str::AbstractString
+    str::String
     offset::Csize_t
     sz::Csize_t
 
@@ -61,25 +62,22 @@ end
 
 mutable struct ConnContext
     curl::Ptr{CURL}
-    url::AbstractString
+    url::String
     rd::ReadData
     resp::SendResponse
     options::SendOptions
     close_ostream::Bool
-    bytes_recd::Integer
+    bytes_recd::Int
 
     ConnContext(options::SendOptions) =
         new(C_NULL, " ", ReadData(), SendResponse(), options, false, 0)
 end
-
-
 
 ##############################
 # Callbacks
 ##############################
 
 function write_cb(buff::Ptr{UInt8}, sz::Csize_t, n::Csize_t, p_ctxt::Ptr{Void})
-#    println("@write_cb")
     ctxt = unsafe_pointer_to_objref(p_ctxt)
     nbytes = sz * n
     write(ctxt.resp.body, buff, nbytes)
@@ -90,10 +88,7 @@ end
 
 c_write_cb = cfunction(write_cb, Csize_t, (Ptr{UInt8}, Csize_t, Csize_t, Ptr{Void}))
 
-
 function curl_read_cb(out::Ptr{Void}, s::Csize_t, n::Csize_t, p_ctxt::Ptr{Void})
-#    println("@curl_read_cb")
-
     ctxt = unsafe_pointer_to_objref(p_ctxt)
     bavail::Csize_t = s * n
     breq::Csize_t = ctxt.rd.sz - ctxt.rd.offset
@@ -101,7 +96,7 @@ function curl_read_cb(out::Ptr{Void}, s::Csize_t, n::Csize_t, p_ctxt::Ptr{Void})
 
     if ctxt.rd.typ == :buffer
         ccall(:memcpy, Ptr{Void}, (Ptr{Void}, Ptr{Void}, UInt),
-                out, convert(Ptr{UInt8}, ctxt.rd.str) + ctxt.rd.offset, b2copy)
+              out, convert(Ptr{UInt8}, ctxt.rd.str) + ctxt.rd.offset, b2copy)
     elseif ctxt.rd.typ == :io
         b_read = read(ctxt.rd.src, UInt8, b2copy)
         ccall(:memcpy, Ptr{Void}, (Ptr{Void}, Ptr{Void}, UInt), out, b_read, b2copy)
@@ -112,16 +107,14 @@ function curl_read_cb(out::Ptr{Void}, s::Csize_t, n::Csize_t, p_ctxt::Ptr{Void})
     r::Csize_t
 end
 
-
 c_curl_read_cb =
     cfunction(curl_read_cb, Csize_t, (Ptr{Void}, Csize_t, Csize_t, Ptr{Void}))
-
 
 function curl_multi_timer_cb(curlm::Ptr{Void}, timeout_ms::Clong, p_muctxt::Ptr{Void})
     muctxt = unsafe_pointer_to_objref(p_muctxt)
     muctxt.timeout = timeout_ms / 1000.0
 
-#    println("Requested timeout value : " * string(muctxt.timeout))
+    info("Requested timeout value : " * string(muctxt.timeout))
 
     ret = convert(Cint, 0)
     ret::Cint
@@ -130,6 +123,7 @@ end
 c_curl_multi_timer_cb =
     cfunction(curl_multi_timer_cb, Cint, (Ptr{Void}, Clong, Ptr{Void}))
 
+null_cb(curl) = nothing
 
 ##############################
 # Utility functions
@@ -159,15 +153,11 @@ macro ce_curlm(f, handle, args...)
     end
 end
 
-
-null_cb(curl) = nothing
-
-function set_opt_blocking(options::SendOptions)
-        o2 = deepcopy(options)
-        o2.blocking = true
-        return o2
+function set_opt_blocking(o::SendOptions)
+    o2 = deepcopy(o)
+    o2.blocking = true
+    o2
 end
-
 
 function setup_easy_handle(url, options::SendOptions)
     ctxt = ConnContext(options)
@@ -181,7 +171,6 @@ function setup_easy_handle(url, options::SendOptions)
 
     p_ctxt = pointer_from_objref(ctxt)
 
-
     @ce_curl curl_easy_setopt curl CURLOPT_URL url
     @ce_curl curl_easy_setopt curl CURLOPT_WRITEFUNCTION c_write_cb
     @ce_curl curl_easy_setopt curl CURLOPT_UPLOAD 1
@@ -191,7 +180,7 @@ function setup_easy_handle(url, options::SendOptions)
         @ce_curl curl_easy_setopt curl CURLOPT_USE_SSL CURLUSESSL_ALL
     end
 
-    if length(options.username) > 0
+    if isempty(options.username)
         @ce_curl curl_easy_setopt curl CURLOPT_USERNAME options.username
         @ce_curl curl_easy_setopt curl CURLOPT_PASSWORD options.passwd
     end
@@ -199,22 +188,19 @@ function setup_easy_handle(url, options::SendOptions)
     ctxt
 end
 
+cleanup_easy_context(::Bool) = nothing
 
-function cleanup_easy_context(ctxt::Union{ConnContext,Bool})
-    if isa(ctxt, ConnContext)
+function cleanup_easy_context(ctxt::ConnContext)
+    if (ctxt.curl != C_NULL)
+        curl_easy_cleanup(ctxt.curl)
+    end
 
-        if (ctxt.curl != C_NULL)
-            curl_easy_cleanup(ctxt.curl)
-        end
-
-        if ctxt.close_ostream
-            close(ctxt.resp.body)
-            ctxt.resp.body = nothing
-            ctxt.close_ostream = false
-        end
+    if ctxt.close_ostream
+        close(ctxt.resp.body)
+        ctxt.resp.body = nothing
+        ctxt.close_ostream = false
     end
 end
-
 
 function process_response(ctxt)
     http_code = Array{Int}(1)
@@ -226,7 +212,6 @@ function process_response(ctxt)
     ctxt.resp.code = http_code[1]
     ctxt.resp.total_time = total_time[1]
 end
-
 
 ##############################
 # Library initializations
@@ -245,7 +230,7 @@ function send(url::AbstractString, to::Vector, from::AbstractString, body::IO,
 
         _do_send(url, to, from, options, rd)
     else
-        remotecall(myid(), send, url, to, from, body, set_opt_blocking(options))
+        remotecall(send, myid(), url, to, from, body, set_opt_blocking(options))
     end
 end
 
@@ -289,10 +274,14 @@ function exec_as_multi(ctxt)
     curl = ctxt.curl
     curlm = curl_multi_init()
 
-    if (curlm == C_NULL) error("Unable to initialize curl_multi_init()") end
+    if curlm == C_NULL
+        error("Unable to initialize curl_multi_init()")
+    end
 
     try
-        if isa(ctxt.options.callback, Function) ctxt.options.callback(curl) end
+        if isa(ctxt.options.callback, Function)
+            ctxt.options.callback(curl)
+        end
 
         @ce_curlm curl_multi_add_handle curl
 
@@ -305,11 +294,7 @@ function exec_as_multi(ctxt)
         started_at = time()
         time_left = request_timeout
 
-    # poll_fd is unreliable when multiple parallel fds are active, hence using curl_multi_perform
-
-
-# START curl_multi_perform  mode
-
+        # poll_fd is unreliable when multiple parallel fds are active, hence using curl_multi_perform
         cmc = curl_multi_perform(curlm, n_active);
         while (n_active[1] > 0) &&  (time_left > 0)
             nb1 = ctxt.bytes_recd
@@ -326,22 +311,20 @@ function exec_as_multi(ctxt)
 
             time_left = request_timeout - (time() - started_at)
         end
-
-# END OF curl_multi_perform
-
+        # END OF curl_multi_perform
 
         if (n_active[1] == 0)
             msgs_in_queue = Array{Cint}(1)
             p_msg::Ptr{CURLMsg2} = curl_multi_info_read(curlm, msgs_in_queue)
 
             while (p_msg != C_NULL)
-#                println("Messages left in Q : " * string(msgs_in_queue[1]))
+                # println("Messages left in Q : " * string(msgs_in_queue[1]))
                 msg = unsafe_load(p_msg)
 
                 if (msg.msg == CURLMSG_DONE)
                     ec = convert(Int, msg.data)
                     if (ec != CURLE_OK)
-#                        println("Result of transfer: " * string(msg.data))
+                        # println("Result of transfer: " * string(msg.data))
                         throw("Error executing request : " * string(curl_easy_strerror(ec)))
                     else
                         process_response(ctxt)
