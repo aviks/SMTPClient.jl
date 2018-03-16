@@ -182,7 +182,7 @@ function setup_easy_handle(url, options::SendOptions)
         @ce_curl curl_easy_setopt curl CURLOPT_USE_SSL CURLUSESSL_ALL
     end
 
-    if isempty(options.username)
+    if !isempty(options.username)
         @ce_curl curl_easy_setopt curl CURLOPT_USERNAME options.username
         @ce_curl curl_easy_setopt curl CURLOPT_PASSWORD options.passwd
     end
