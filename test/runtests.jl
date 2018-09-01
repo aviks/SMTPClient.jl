@@ -3,7 +3,7 @@ using Test
 using SMTPClient
 
 
-@test "Error message for Humans(TM)" begin
+@testset "Error message for Humans(TM)" begin
     let errmsg = "Couldn't resolve host name"
         server = "smtp://nonexists"
         body = IOBuffer("test")
@@ -18,7 +18,7 @@ using SMTPClient
 end
 
 
-@test "Non-blocking send" begin
+@testset "Non-blocking send" begin
     let errmsg = "Couldn't resolve host name"
         opt = SendOptions(blocking = false)
         server = "smtp://nonexists"
