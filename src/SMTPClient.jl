@@ -79,7 +79,7 @@ end
 # Callbacks
 ##############################
 
-function write_cb(buff::Ptr{UInt8}, sz::Csize_t, n::Csize_t, p_ctxt::Ptr{CVoid})
+function write_cb(buff::Ptr{UInt8}, sz::Csize_t, n::Csize_t, p_ctxt::Ptr{Cvoid})
     ctxt = unsafe_pointer_to_objref(p_ctxt)
     nbytes = sz * n
     write(ctxt.resp.body, buff, nbytes)
@@ -88,20 +88,20 @@ function write_cb(buff::Ptr{UInt8}, sz::Csize_t, n::Csize_t, p_ctxt::Ptr{CVoid})
     nbytes::Csize_t
 end
 
-c_write_cb = @cfunction(write_cb, Csize_t, (Ptr{UInt8}, Csize_t, Csize_t, Ptr{CVoid}))
+c_write_cb = @cfunction(write_cb, Csize_t, (Ptr{UInt8}, Csize_t, Csize_t, Ptr{Cvoid}))
 
-function curl_read_cb(out::Ptr{CVoid}, s::Csize_t, n::Csize_t, p_ctxt::Ptr{CVoid})
+function curl_read_cb(out::Ptr{Cvoid}, s::Csize_t, n::Csize_t, p_ctxt::Ptr{Cvoid})
     ctxt = unsafe_pointer_to_objref(p_ctxt)
     bavail::Csize_t = s * n
     breq::Csize_t = ctxt.rd.sz - ctxt.rd.offset
     b2copy = bavail > breq ? breq : bavail
 
     if ctxt.rd.typ == :buffer
-        ccall(:memcpy, Ptr{CVoid}, (Ptr{CVoid}, Ptr{CVoid}, UInt),
+        ccall(:memcpy, Ptr{Cvoid}, (Ptr{Cvoid}, Ptr{Cvoid}, UInt),
               out, convert(Ptr{UInt8}, ctxt.rd.str) + ctxt.rd.offset, b2copy)
     elseif ctxt.rd.typ == :io
         b_read = read(ctxt.rd.src, UInt8, b2copy)
-        ccall(:memcpy, Ptr{CVoid}, (Ptr{CVoid}, Ptr{CVoid}, UInt), out, b_read, b2copy)
+        ccall(:memcpy, Ptr{Cvoid}, (Ptr{Cvoid}, Ptr{Cvoid}, UInt), out, b_read, b2copy)
     end
     ctxt.rd.offset = ctxt.rd.offset + b2copy
 
@@ -110,9 +110,9 @@ function curl_read_cb(out::Ptr{CVoid}, s::Csize_t, n::Csize_t, p_ctxt::Ptr{CVoid
 end
 
 c_curl_read_cb =
-    @cfunction(curl_read_cb, Csize_t, (Ptr{CVoid}, Csize_t, Csize_t, Ptr{CVoid}))
+    @cfunction(curl_read_cb, Csize_t, (Ptr{Cvoid}, Csize_t, Csize_t, Ptr{Cvoid}))
 
-function curl_multi_timer_cb(curlm::Ptr{CVoid}, timeout_ms::Clong, p_muctxt::Ptr{CVoid})
+function curl_multi_timer_cb(curlm::Ptr{Cvoid}, timeout_ms::Clong, p_muctxt::Ptr{Cvoid})
     muctxt = unsafe_pointer_to_objref(p_muctxt)
     muctxt.timeout = timeout_ms / 1000.0
 
@@ -123,9 +123,9 @@ function curl_multi_timer_cb(curlm::Ptr{CVoid}, timeout_ms::Clong, p_muctxt::Ptr
 end
 
 c_curl_multi_timer_cb =
-    @cfunction(curl_multi_timer_cb, Cint, (Ptr{CVoid}, Clong, Ptr{CVoid}))
+    @cfunction(curl_multi_timer_cb, Cint, (Ptr{Cvoid}, Clong, Ptr{Cvoid}))
 
-null_cb(curl) = CVoid
+null_cb(curl) = Cvoid
 
 ##############################
 # Utility functions
@@ -190,7 +190,7 @@ function setup_easy_handle(url, options::SendOptions)
     ctxt
 end
 
-cleanup_easy_context(::Bool) = CVoid
+cleanup_easy_context(::Bool) = Cvoid
 
 function cleanup_easy_context(ctxt::ConnContext)
     if (ctxt.curl != C_NULL)
@@ -199,7 +199,7 @@ function cleanup_easy_context(ctxt::ConnContext)
 
     if ctxt.close_ostream
         close(ctxt.resp.body)
-        ctxt.resp.body = CVoid
+        ctxt.resp.body = Cvoid
         ctxt.close_ostream = false
     end
 end
@@ -240,7 +240,7 @@ end
 function _do_send(url::AbstractString, to::Vector, from::AbstractString,
                   options::SendOptions, rd::ReadData)
     ctxt = false
-    slist::Ptr{CVoid} = C_NULL
+    slist::Ptr{Cvoid} = C_NULL
     try
         ctxt = setup_easy_handle(url, options)
         ctxt.rd = rd
