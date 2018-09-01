@@ -1,4 +1,4 @@
-using Base.runtest
+using Test
 
 using SMTPClient
 
