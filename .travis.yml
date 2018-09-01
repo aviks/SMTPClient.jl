@@ -8,10 +8,6 @@
     - 0.7
     - 1.0
 
- notifications:
-     email: false
-
- sudo: false
 script:
     - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
     - julia -e 'Pkg.clone(pwd())'
