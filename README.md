@@ -27,8 +27,15 @@ opt = SendOptions(blocking = true, isSSL = true,
                   username = "you@gmail.com", passwd = "yourgmailpassword")
 #Provide the message body as RFC5322 within an IO
 body = IOBuffer("Date: Fri, 18 Oct 2013 21:44:29 +0100\nFrom: You <you@gmail.com>\nTo: me@test.com\nSubject: Julia Test\n\nTest Message")
-resp = send("smtp://smtp.gmail.com:587", ["<me@test.com>"], "<you@gmail.com>", body, opt)
+resp = send("smtps://smtp.gmail.com:465", ["<me@test.com>"], "<you@gmail.com>", body, opt)
 ```
+
+### Gmail Notes
+
+Due to the security policy of Gmail,
+you need to "allow less secure apps into your account":
+
+- https://myaccount.google.com/lesssecureapps
 
 ## Function Reference
 

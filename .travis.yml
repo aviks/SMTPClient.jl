@@ -1,14 +1,9 @@
 language: julia
+
 os:
     - linux
     - osx
+
 julia:
-    - 0.6
-    - nightly
-notifications:
-    email: false
-sudo: false
-script:
-    - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-    - julia -e 'Pkg.clone(pwd())'
-    - julia -e 'Pkg.test("SMTPClient", coverage=true)'
+    - 0.7
+    - 1.0
