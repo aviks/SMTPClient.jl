@@ -12,7 +12,7 @@ using SMTPClient
             send(server, ["nobody@earth"], "nobody@earth", body)
             @assert false, "send should fail"
         catch e
-            @test string(e)==errmsg
+            @test occursin(string(errmsg), string(e))
         end
     end
 end
