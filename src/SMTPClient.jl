@@ -8,20 +8,6 @@ import Sockets: send
 
 export SendOptions, SendResponse, send
 
-def_rto = 0.0
-
-##############################
-# Module init/cleanup
-##############################
-
-function __init__()
-  curl_global_init(CURL_GLOBAL_ALL)
-
-  atexit() do
-    curl_global_cleanup()
-  end
-end
-
 ##############################
 # Struct definitions
 ##############################
@@ -49,14 +35,14 @@ end
 function show(io::IO, o::SendResponse)
     println(io, "Return Code   :", o.code)
     println(io, "Time :", o.total_time)
-    println(io, "Response:", String(take!(o.body)))
+    print(io, "Response:", String(take!(o.body)))
 end
 
 
 mutable struct ReadData
     typ::Symbol
     src::Any
-    str::String
+    str::AbstractString
     offset::Csize_t
     sz::Csize_t
 
@@ -80,7 +66,7 @@ end
 # Callbacks
 ##############################
 
-function write_cb(buff::Ptr{UInt8}, sz::Csize_t, n::Csize_t, p_ctxt::Ptr{Cvoid})
+function curl_write_cb(buff::Ptr{UInt8}, sz::Csize_t, n::Csize_t, p_ctxt::Ptr{Cvoid})
     ctxt = unsafe_pointer_to_objref(p_ctxt)
     nbytes = sz * n
     write(ctxt.resp.body, buff, nbytes)
@@ -88,8 +74,6 @@ function write_cb(buff::Ptr{UInt8}, sz::Csize_t, n::Csize_t, p_ctxt::Ptr{Cvoid})
 
     nbytes::Csize_t
 end
-
-c_write_cb = @cfunction(write_cb, Csize_t, (Ptr{UInt8}, Csize_t, Csize_t, Ptr{Cvoid}))
 
 function curl_read_cb(out::Ptr{Cvoid}, s::Csize_t, n::Csize_t, p_ctxt::Ptr{Cvoid})
     ctxt = unsafe_pointer_to_objref(p_ctxt)
@@ -101,7 +85,7 @@ function curl_read_cb(out::Ptr{Cvoid}, s::Csize_t, n::Csize_t, p_ctxt::Ptr{Cvoid
         ccall(:memcpy, Ptr{Cvoid}, (Ptr{Cvoid}, Ptr{Cvoid}, UInt),
               out, convert(Ptr{UInt8}, ctxt.rd.str) + ctxt.rd.offset, b2copy)
     elseif ctxt.rd.typ == :io
-        b_read = read(ctxt.rd.src, UInt8, b2copy)
+        b_read = read(ctxt.rd.src, b2copy)
         ccall(:memcpy, Ptr{Cvoid}, (Ptr{Cvoid}, Ptr{Cvoid}, UInt), out, b_read, b2copy)
     end
     ctxt.rd.offset = ctxt.rd.offset + b2copy
@@ -109,9 +93,6 @@ function curl_read_cb(out::Ptr{Cvoid}, s::Csize_t, n::Csize_t, p_ctxt::Ptr{Cvoid
     r = convert(Csize_t, b2copy)
     r::Csize_t
 end
-
-c_curl_read_cb =
-    @cfunction(curl_read_cb, Csize_t, (Ptr{Cvoid}, Csize_t, Csize_t, Ptr{Cvoid}))
 
 function curl_multi_timer_cb(curlm::Ptr{Cvoid}, timeout_ms::Clong, p_muctxt::Ptr{Cvoid})
     muctxt = unsafe_pointer_to_objref(p_muctxt)
@@ -166,7 +147,7 @@ function setup_easy_handle(url, options::SendOptions)
     ctxt = ConnContext(options)
 
     curl = curl_easy_init()
-    if (curl == C_NULL) throw("curl_easy_init() failed") end
+    curl == C_NULL && throw("curl_easy_init() failed")
 
     ctxt.curl = curl
 
@@ -175,7 +156,7 @@ function setup_easy_handle(url, options::SendOptions)
     p_ctxt = pointer_from_objref(ctxt)
 
     @ce_curl curl_easy_setopt curl CURLOPT_URL url
-    @ce_curl curl_easy_setopt curl CURLOPT_WRITEFUNCTION c_write_cb
+    @ce_curl curl_easy_setopt curl CURLOPT_WRITEFUNCTION c_curl_write_cb
     @ce_curl curl_easy_setopt curl CURLOPT_UPLOAD 1
     @ce_curl curl_easy_setopt curl CURLOPT_WRITEDATA p_ctxt
 
@@ -346,6 +327,23 @@ function exec_as_multi(ctxt)
     end
 
     ctxt.resp
+end
+
+##############################
+# Module init/cleanup
+##############################
+
+function __init__()
+  curl_global_init(CURL_GLOBAL_ALL)
+
+  global c_curl_write_cb =
+    @cfunction(curl_write_cb, Csize_t, (Ptr{UInt8}, Csize_t, Csize_t, Ptr{Cvoid}))
+  global c_curl_read_cb =
+    @cfunction(curl_read_cb,  Csize_t, (Ptr{Cvoid}, Csize_t, Csize_t, Ptr{Cvoid}))
+
+  atexit() do
+    curl_global_cleanup()
+  end
 end
 
 
