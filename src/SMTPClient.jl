@@ -4,6 +4,7 @@ using LibCURL
 using Distributed
 
 import Base: convert, show
+import Sockets: send
 
 export SendOptions, SendResponse, send
 
