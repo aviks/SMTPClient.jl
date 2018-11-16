@@ -8,7 +8,7 @@ A [CURL](curl.haxx.se) based SMTP client with fairly low level API.
 It is useful for sending emails from within Julia code.
 Depends on [LibCURL.jl](https://github.com/JuliaWeb/LibCURL.jl/).
 
-SMTPClient requires Julia 0.6 or higher.
+SMTPClient requires Julia 0.7 or higher.
 
 ## Installation
 
