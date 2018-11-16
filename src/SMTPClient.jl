@@ -66,16 +66,16 @@ end
 # Callbacks
 ##############################
 
-function curl_write_cb(buff::Ptr{UInt8}, sz::Csize_t, n::Csize_t, p_ctxt::Ptr{Cvoid})
+function curl_write_cb(buff::Ptr{Cchar}, s::Csize_t, n::Csize_t, p_ctxt::Ptr{Cvoid})::Csize_t
     ctxt = unsafe_pointer_to_objref(p_ctxt)
-    nbytes = sz * n
-    write(ctxt.resp.body, buff, nbytes)
+    nbytes = s * n
+    write(ctxt.resp.body, unsafe_string(buff, nbytes))
     ctxt.bytes_recd = ctxt.bytes_recd + nbytes
 
-    nbytes::Csize_t
+    nbytes
 end
 
-function curl_read_cb(out::Ptr{Cvoid}, s::Csize_t, n::Csize_t, p_ctxt::Ptr{Cvoid})
+function curl_read_cb(out::Ptr{Cvoid}, s::Csize_t, n::Csize_t, p_ctxt::Ptr{Cvoid})::Csize_t
     ctxt = unsafe_pointer_to_objref(p_ctxt)
     bavail::Csize_t = s * n
     breq::Csize_t = ctxt.rd.sz - ctxt.rd.offset
@@ -90,8 +90,7 @@ function curl_read_cb(out::Ptr{Cvoid}, s::Csize_t, n::Csize_t, p_ctxt::Ptr{Cvoid
     end
     ctxt.rd.offset = ctxt.rd.offset + b2copy
 
-    r = convert(Csize_t, b2copy)
-    r::Csize_t
+    b2copy
 end
 
 function curl_multi_timer_cb(curlm::Ptr{Cvoid}, timeout_ms::Clong, p_muctxt::Ptr{Cvoid})
@@ -153,12 +152,10 @@ function setup_easy_handle(url, options::SendOptions)
 
     ctxt.url = url
 
-    p_ctxt = pointer_from_objref(ctxt)
-
     @ce_curl curl_easy_setopt curl CURLOPT_URL url
     @ce_curl curl_easy_setopt curl CURLOPT_WRITEFUNCTION c_curl_write_cb
+    @ce_curl curl_easy_setopt curl CURLOPT_WRITEDATA ctxt
     @ce_curl curl_easy_setopt curl CURLOPT_UPLOAD 1
-    @ce_curl curl_easy_setopt curl CURLOPT_WRITEDATA p_ctxt
 
     if options.isSSL
         @ce_curl curl_easy_setopt curl CURLOPT_USE_SSL CURLUSESSL_ALL
@@ -226,21 +223,15 @@ function _do_send(url::AbstractString, to::Vector, from::AbstractString,
     try
         ctxt = setup_easy_handle(url, options)
         ctxt.rd = rd
-        # rd.typ is always IO for smtp
-
-        p_ctxt = pointer_from_objref(ctxt)
-        @ce_curl curl_easy_setopt ctxt.curl CURLOPT_READDATA p_ctxt
 
         @ce_curl curl_easy_setopt ctxt.curl CURLOPT_READFUNCTION c_curl_read_cb
+        @ce_curl curl_easy_setopt ctxt.curl CURLOPT_READDATA ctxt
 
         for tos in to
             slist = curl_slist_append(slist, tos)
         end
-
         @ce_curl curl_easy_setopt ctxt.curl CURLOPT_MAIL_RCPT slist
-
         @ce_curl curl_easy_setopt ctxt.curl CURLOPT_MAIL_FROM from
-
 
         @ce_curl curl_easy_perform ctxt.curl
         process_response(ctxt)
