@@ -1,5 +1,5 @@
 using Test
-
+using Future
 using SMTPClient
 
 @testset "Errors" begin
