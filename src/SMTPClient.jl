@@ -30,11 +30,12 @@ end
 mutable struct SendOptions
     blocking::Bool
     isSSL::Bool
-    username::AbstractString
-    passwd::AbstractString
+    username::String
+    passwd::String
 
-    SendOptions(; blocking = true, isSSL = false, username = "", passwd = "") =
-        new(blocking, isSSL, username, passwd)
+    SendOptions(; blocking::Bool = true, isSSL::Bool = false,
+                username::AbstractString = "", passwd::AbstractString = "") =
+      new(blocking, isSSL, String(username), String(passwd))
 end
 
 mutable struct SendResponse
@@ -183,7 +184,7 @@ function setup_easy_handle(url, options::SendOptions)
         @ce_curl curl_easy_setopt curl CURLOPT_USE_SSL CURLUSESSL_ALL
     end
 
-    if isempty(options.username)
+    if !isempty(options.username)
         @ce_curl curl_easy_setopt curl CURLOPT_USERNAME options.username
         @ce_curl curl_easy_setopt curl CURLOPT_PASSWORD options.passwd
     end
