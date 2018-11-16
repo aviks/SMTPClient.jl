@@ -126,7 +126,7 @@ end
 c_curl_multi_timer_cb =
     @cfunction(curl_multi_timer_cb, Cint, (Ptr{Cvoid}, Clong, Ptr{Cvoid}))
 
-null_cb(curl) = Cvoid
+null_cb(curl) = nothing
 
 ##############################
 # Utility functions
@@ -191,7 +191,7 @@ function setup_easy_handle(url, options::SendOptions)
     ctxt
 end
 
-cleanup_easy_context(::Bool) = Cvoid
+cleanup_easy_context(::Bool) = nothing
 
 function cleanup_easy_context(ctxt::ConnContext)
     if (ctxt.curl != C_NULL)
@@ -200,7 +200,7 @@ function cleanup_easy_context(ctxt::ConnContext)
 
     if ctxt.close_ostream
         close(ctxt.resp.body)
-        ctxt.resp.body = Cvoid
+        ctxt.resp.body = nothing
         ctxt.close_ostream = false
     end
 end
