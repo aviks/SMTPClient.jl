@@ -30,6 +30,13 @@ body = IOBuffer("Date: Fri, 18 Oct 2013 21:44:29 +0100\nFrom: You <you@gmail.com
 resp = send("smtps://smtp.gmail.com:465", ["<me@test.com>"], "<you@gmail.com>", body, opt)
 ```
 
+### Gmail Notes
+
+Due to the security policy of Gmail,
+you need to "allow less secure apps into your account":
+
+- https://myaccount.google.com/lesssecureapps
+
 ## Function Reference
 
 ```julia
