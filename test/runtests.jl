@@ -1,5 +1,4 @@
 using Test
-using Future
 using SMTPClient
 
 @testset "Errors" begin
@@ -25,8 +24,6 @@ using SMTPClient
             body = IOBuffer("test")
 
             future = send(server, ["nobody@earth"], "nobody@earth", body, opt)
-            @test future isa Future
-
             e = fetch(future)
             @test occursin(string(errmsg), string(e))
         end
