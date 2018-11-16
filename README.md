@@ -44,7 +44,7 @@ send(url, to-addresses, from-address, message-body, options)
 ```
 
 Send an email.
-  * `url` should be of the form `smtp://server:port`.
+  * `url` should be of the form `smtp://server:port` or `smtps://...`.
   * `to-address` is a one dimensional array of Strings.
   * `from-address` is a String. All addresses must be enclosed in angle brackets.
   * `message-body` must be a RFC5322 formatted message body provided via an `IO`.
