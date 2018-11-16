@@ -3,6 +3,7 @@ __precompile__()
 module SMTPClient
 
 using LibCURL
+using Distributed
 
 import Base: convert, show
 
