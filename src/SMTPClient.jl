@@ -206,10 +206,10 @@ function cleanup_easy_context(ctxt::ConnContext)
 end
 
 function process_response(ctxt)
-    http_code = Array{Int}(1)
+    http_code = Array{Int}(undef, 1)
     @ce_curl curl_easy_getinfo ctxt.curl CURLINFO_RESPONSE_CODE http_code
 
-    total_time = Array{Float64}(1)
+    total_time = Array{Float64}(undef, 1)
     @ce_curl curl_easy_getinfo ctxt.curl CURLINFO_TOTAL_TIME total_time
 
     ctxt.resp.code = http_code[1]
