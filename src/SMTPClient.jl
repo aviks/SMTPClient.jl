@@ -33,9 +33,9 @@ end
 
 
 function show(io::IO, o::SendResponse)
-    println(io, "Return Code   :", o.code)
-    println(io, "Time :", o.total_time)
-    print(io, "Response:", String(take!(o.body)))
+    println(io, "Return Code: ", o.code)
+    println(io, "Time:        ", o.total_time)
+    print(io,   "Response:    ", String(take!(o.body)))
 end
 
 
