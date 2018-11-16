@@ -28,6 +28,6 @@ end
         @test future isa Future
 
         e = fetch(future)
-        @test contains(string(e), errmsg)
+        @test occursin(string(e), errmsg)
     end
 end
