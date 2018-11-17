@@ -3,7 +3,7 @@ language: julia
 addons:
   apt:
     packages:
-      - postfix
+      - python3
 
 os:
     - linux
