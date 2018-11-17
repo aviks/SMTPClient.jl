@@ -11,12 +11,12 @@ end
 
 @testset "Send" begin
   logfile = tempname()
-  server = "smtp://0.0.0.0:1025"
+  server = "smtp://127.0.0.1:1025"
   addr = "<julian@julialang.org>"
   mock = joinpath(dirname(@__FILE__), "mock.py")
 
-  cmd = `python3 $mock $logfile`
-  smtpsink = run(cmd, wait = false)
+  cmd = `python3.7 $mock $logfile`
+  smtpsink = run(pipeline(cmd, stderr=stdout), wait = false)
   sleep(.5)  # wait for fake smtp server ready
 
   try
