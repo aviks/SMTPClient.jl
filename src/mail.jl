@@ -1,18 +1,12 @@
 function send(url::AbstractString, to::Vector, from::AbstractString, body::IO,
               options::SendOptions = SendOptions())
-  if options.blocking
-    rd::ReadData = ReadData()
+  rd::ReadData = ReadData()
 
-    rd.typ = :io
-    rd.src = body
-    seekend(body)
-    rd.sz = position(body)
-    seekstart(body)
+  rd.typ = :io
+  rd.src = body
+  rd.sz = body.size
 
-    _do_send(url, to, from, options, rd)
-  else
-    remotecall(send, myid(), url, to, from, body, set_opt_blocking(options))
-  end
+  _do_send(url, to, from, options, rd)
 end
 
 
