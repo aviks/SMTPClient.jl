@@ -35,12 +35,13 @@ function setup_easy_handle(url, options::SendOptions)
   curl == C_NULL && throw("curl_easy_init() failed")
 
   ctxt.curl = curl
-
   ctxt.url = url
 
   @ce_curl curl_easy_setopt curl CURLOPT_URL url
   @ce_curl curl_easy_setopt curl CURLOPT_WRITEFUNCTION c_curl_write_cb
   @ce_curl curl_easy_setopt curl CURLOPT_WRITEDATA ctxt
+  @ce_curl curl_easy_setopt curl CURLOPT_READFUNCTION c_curl_read_cb
+  @ce_curl curl_easy_setopt curl CURLOPT_READDATA ctxt
   @ce_curl curl_easy_setopt curl CURLOPT_UPLOAD 1
 
   if options.isSSL
@@ -58,7 +59,7 @@ end
 cleanup_easy_context(::Bool) = nothing
 
 function cleanup_easy_context(ctxt::ConnContext)
-  if (ctxt.curl != C_NULL)
+  if ctxt.curl != C_NULL
     curl_easy_cleanup(ctxt.curl)
   end
 
