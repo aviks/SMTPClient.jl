@@ -139,6 +139,12 @@ class DebuggingServer(smtpd.DebuggingServer):
 
     def process_message(self, peer, mailfrom, rcpttos, data, **kwargs):
         with open(self.mbox, 'w') as f:
+            # RCPT TO
+            for i in rcpttos:
+                f.write('X-RCPT: ')
+                f.write(i)
+                f.write('\n')
+            # content
             f.write(data.decode())
             f.write('\n')
 
