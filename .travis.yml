@@ -1,9 +1,20 @@
+dist: xenial
+
 language: julia
+
+addons:
+  apt:
+    sources:
+      - deadsnakes
+    packages:
+      - python3.7
 
 os:
     - linux
-    - osx
 
 julia:
     - 0.7
     - 1.0
+
+before_script:
+    - python3.7 --version

@@ -16,29 +16,24 @@ function send(url::AbstractString, to::Vector, from::AbstractString, body::IO,
 end
 
 
-function _do_send(url::AbstractString, to::Vector, from::AbstractString,
-                  options::SendOptions, rd::ReadData)
+function _do_send(url::AbstractString, to::Vector{String},
+                  from::AbstractString, options::SendOptions, rd::ReadData)
   ctxt = false
-  slist::Ptr{Cvoid} = C_NULL
+  rcpts= C_NULL
   try
     ctxt = setup_easy_handle(url, options)
     ctxt.rd = rd
+    rcpts = foldl(curl_slist_append, to, init = rcpts)
 
-    @ce_curl curl_easy_setopt ctxt.curl CURLOPT_READFUNCTION c_curl_read_cb
-    @ce_curl curl_easy_setopt ctxt.curl CURLOPT_READDATA ctxt
-
-    for tos in to
-      slist = curl_slist_append(slist, tos)
-    end
-    @ce_curl curl_easy_setopt ctxt.curl CURLOPT_MAIL_RCPT slist
+    @ce_curl curl_easy_setopt ctxt.curl CURLOPT_MAIL_RCPT rcpts
     @ce_curl curl_easy_setopt ctxt.curl CURLOPT_MAIL_FROM from
 
     @ce_curl curl_easy_perform ctxt.curl
     process_response(ctxt)
     return ctxt.resp
   finally
-    if (slist != C_NULL)
-      curl_slist_free_all(slist)
+    if rcpts != C_NULL
+      curl_slist_free_all(rcpts)
     end
     cleanup_easy_context(ctxt)
   end
