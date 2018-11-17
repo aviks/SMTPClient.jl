@@ -1,35 +1,26 @@
-function send(url::AbstractString, to::Vector, from::AbstractString, body::IO,
-              options::SendOptions = SendOptions())
-  rd::ReadData = ReadData()
+send(url::AbstractString, to::AbstractVector{<:AbstractString},
+              from::AbstractString, body::IO, opts::SendOptions = SendOptions()) =
+  do_send(String(url), map(String, collect(to)), String(from), opts, ReadData(body))
 
-  rd.typ = :io
-  rd.src = body
-  rd.sz = body.size
-
-  _do_send(url, to, from, options, rd)
-end
-
-
-function _do_send(url::AbstractString, to::Vector{String},
-                  from::AbstractString, options::SendOptions, rd::ReadData)
-  ctxt = false
-  rcpts= C_NULL
+function do_send(url::String, to::Vector{String}, from::String, options::SendOptions,
+                 rd::ReadData)
+  ctxt = nothing
+  rcpts = foldl(curl_slist_append, to, init = C_NULL)
   try
-    ctxt = setup_easy_handle(url, options)
-    ctxt.rd = rd
-    rcpts = foldl(curl_slist_append, to, init = rcpts)
+    ctxt = ConnContext(url = url, rd = rd, options = options)
+    curl = ctxt.curl
 
-    @ce_curl curl_easy_setopt ctxt.curl CURLOPT_MAIL_RCPT rcpts
-    @ce_curl curl_easy_setopt ctxt.curl CURLOPT_MAIL_FROM from
+    @ce_curl curl_easy_setopt curl CURLOPT_MAIL_RCPT rcpts
+    @ce_curl curl_easy_setopt curl CURLOPT_MAIL_FROM from
 
-    @ce_curl curl_easy_perform ctxt.curl
-    process_response(ctxt)
+    @ce_curl curl_easy_perform curl
+    getresponse!(ctxt)
     return ctxt.resp
   finally
     if rcpts != C_NULL
       curl_slist_free_all(rcpts)
     end
-    cleanup_easy_context(ctxt)
+    cleanup!(ctxt)
   end
 end
 
@@ -91,7 +82,7 @@ function exec_as_multi(ctxt)
             # println("Result of transfer: " * string(msg.data))
             throw("Error executing request : " * string(curl_easy_strerror(ec)))
           else
-            process_response(ctxt)
+            getresponse!(ctxt)
           end
         end
 

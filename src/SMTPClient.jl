@@ -8,9 +8,9 @@ import Sockets: send
 
 export SendOptions, SendResponse, send
 
+include("utils.jl")
 include("types.jl")
 include("cbs.jl")  # callbacks
-include("utils.jl")
 include("mail.jl")
 
 ##############################

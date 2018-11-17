@@ -22,13 +22,12 @@ function Base.show(io::IO, o::SendOptions)
 end
 
 mutable struct SendResponse
-  body::IO
+  body::IOBuffer
   code::Int
   total_time::Float64
 
   SendResponse() = new(IOBuffer(), 0, 0.0)
 end
-
 
 function Base.show(io::IO, o::SendResponse)
   println(io, "Return Code: ", o.code)
@@ -37,26 +36,74 @@ function Base.show(io::IO, o::SendResponse)
 end
 
 
-mutable struct ReadData
+mutable struct ReadData{T<:IO}
   typ::Symbol
-  src::Any
+  src::T
   str::AbstractString
   offset::Csize_t
   sz::Csize_t
-
-  ReadData() = new(:undefined, false, "", 0, 0)
 end
+
+ReadData() = ReadData{IOBuffer}(:undefined, IOBuffer(), "", 0, 0)
+ReadData(src::IOBuffer) = ReadData{IOBuffer}(:io, src, "", 0, src.size)
 
 
 mutable struct ConnContext
-  curl::Ptr{CURL}
+  curl::Ptr{CURL}  # CURL handle
   url::String
   rd::ReadData
   resp::SendResponse
   options::SendOptions
   close_ostream::Bool
   bytes_recd::Int
+end
 
-  ConnContext(options::SendOptions) =
-  new(C_NULL, " ", ReadData(), SendResponse(), options, false, 0)
+function ConnContext(; curl = curl_easy_init(),
+                     url::String = "",
+                     rd::ReadData = ReadData(),
+                     resp::SendResponse = SendResponse(),
+                     options::SendOptions = SendOptions())
+  curl == C_NULL && throw("curl_easy_init() failed")
+
+  ctxt = ConnContext(curl, url, rd, resp, options, false, 0)
+
+  @ce_curl curl_easy_setopt curl CURLOPT_URL url
+  @ce_curl curl_easy_setopt curl CURLOPT_WRITEFUNCTION c_curl_write_cb
+  @ce_curl curl_easy_setopt curl CURLOPT_WRITEDATA ctxt
+  @ce_curl curl_easy_setopt curl CURLOPT_READFUNCTION c_curl_read_cb
+  @ce_curl curl_easy_setopt curl CURLOPT_READDATA ctxt
+  @ce_curl curl_easy_setopt curl CURLOPT_UPLOAD 1
+
+  if options.isSSL
+    @ce_curl curl_easy_setopt curl CURLOPT_USE_SSL CURLUSESSL_ALL
+  end
+
+  if !isempty(options.username)
+    @ce_curl curl_easy_setopt curl CURLOPT_USERNAME options.username
+    @ce_curl curl_easy_setopt curl CURLOPT_PASSWORD options.passwd
+  end
+
+  ctxt
+end
+
+cleanup!(::Nothing) = nothing
+function cleanup!(ctxt::ConnContext)
+  ctxt.curl ≠ C_NULL && curl_easy_cleanup(ctxt.curl)
+
+  if ctxt.close_ostream
+    close(ctxt.resp.body)
+    ctxt.resp.body = nothing
+    ctxt.close_ostream = false
+  end
+end
+
+function getresponse!(ctxt::ConnContext)
+  code = Array{Int}(undef, 1)
+  @ce_curl curl_easy_getinfo ctxt.curl CURLINFO_RESPONSE_CODE code
+
+  total_time = Array{Float64}(undef, 1)
+  @ce_curl curl_easy_getinfo ctxt.curl CURLINFO_TOTAL_TIME total_time
+
+  ctxt.resp.code = code[1]
+  ctxt.resp.total_time = total_time[1]
 end
