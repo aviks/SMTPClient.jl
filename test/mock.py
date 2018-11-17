@@ -150,6 +150,6 @@ if __name__ == '__main__':
         print('usage:', sys.argv[0], "<mbox>")
         exit(1)
 
-    server = DebuggingServer(('localhost', 1025), ('localhost', 25))
+    server = DebuggingServer(('0.0.0.0', 1025), ('0.0.0.0', 25))
     server.mbox = mbox
     asyncore.loop()
