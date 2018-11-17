@@ -22,12 +22,6 @@ macro ce_curlm(f, handle, args...)
   end
 end
 
-function set_opt_blocking(o::SendOptions)
-  o2 = deepcopy(o)
-  o2.blocking = true
-  o2
-end
-
 function setup_easy_handle(url, options::SendOptions)
   ctxt = ConnContext(options)
 
