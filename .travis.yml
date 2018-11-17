@@ -1,5 +1,10 @@
 language: julia
 
+addons:
+  apt:
+    packages:
+      - postfix
+
 os:
     - linux
     - osx
