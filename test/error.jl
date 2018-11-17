@@ -16,13 +16,15 @@
 
   @testset "Non-blocking send" begin
     let errmsg = "Couldn't resolve host name"
-      opt = SendOptions(blocking = false)
       server = "smtp://nonexists"
       body = IOBuffer("test")
 
-      future = send(server, ["nobody@earth"], "nobody@earth", body, opt)
-      e = fetch(future)
-      @test occursin(string(errmsg), string(e))
+      t = @async send(server, ["nobody@earth"], "nobody@earth", body)
+      try
+        wait(t)
+      catch e
+        @test occursin(string(errmsg), string(e))
+      end
     end
   end
 end  # @testset "Errors"

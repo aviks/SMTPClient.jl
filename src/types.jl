@@ -1,12 +1,24 @@
 mutable struct SendOptions
-  blocking::Bool
   isSSL::Bool
   username::String
   passwd::String
+end
 
-  SendOptions(; blocking::Bool = true, isSSL::Bool = false,
-              username::AbstractString = "", passwd::AbstractString = "") =
-  new(blocking, isSSL, String(username), String(passwd))
+function SendOptions(; isSSL::Bool = false, username::AbstractString = "",
+                     passwd::AbstractString = "", kwargs...)
+  kwargs = Dict(kwargs)
+  if get(kwargs, :blocking, nothing) ≠ nothing
+    @warn "options `blocking` is deprecated, blocking behaviour is default now, " *
+          "use `@async send(...)` for non-blocking style."
+    pop!(kwargs, :blocking)
+  end
+  length(keys(kwargs)) ≠ 0 && throw(MethodError("got unsupported keyword arguments"))
+  SendOptions(isSSL, String(username), String(passwd))
+end
+
+function Base.show(io::IO, o::SendOptions)
+  print(io, "SSL:      ", o.isSSL)
+  !isempty(o.username) && print(io, "\nusername: ", o.username)
 end
 
 mutable struct SendResponse

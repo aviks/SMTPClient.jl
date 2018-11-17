@@ -21,17 +21,15 @@ end
 
   try
     let  # send with body::IOBuffer
-      opts = SendOptions(blocking = true)
       body = IOBuffer("body::IOBuffer test")
-      send(server, [addr], addr, body, opts)
+      send(server, [addr], addr, body)
       test_content(logfile) do s
         @test occursin("body::IOBuffer test", s)
       end
     end
 
     let  # AUTH PLAIN
-      opts = SendOptions(blocking = true,
-                         username = "foo@example.org", passwd = "bar")
+      opts = SendOptions(username = "foo@example.org", passwd = "bar")
       body = IOBuffer("AUTH PLAIN test")
       send(server, [addr], addr, body, opts)
       test_content(logfile) do s
@@ -40,23 +38,30 @@ end
     end
 
     let
-      opts = SendOptions(blocking = true,
-                         username = "foo@example.org", passwd = "invalid")
+      opts = SendOptions(username = "foo@example.org", passwd = "invalid")
       body = IOBuffer("invalid password")
       @test_throws Exception send(server, [addr], addr, body, opts)
     end
 
     let  # multiple RCPT TO
-      opts = SendOptions(blocking = true)
       body = IOBuffer("multiple rcpt")
       rcpts = ["<foo@example.org>", "<bar@example.org>", "<baz@example.org>"]
-      send(server, rcpts, addr, body, opts)
+      send(server, rcpts, addr, body)
 
       test_content(logfile) do s
         @test occursin("multiple rcpt", s)
         @test occursin("X-RCPT: foo@example.org", s)
         @test occursin("X-RCPT: bar@example.org", s)
         @test occursin("X-RCPT: baz@example.org", s)
+      end
+    end
+
+    let  # non-blocking send
+      body = IOBuffer("non-blocking send")
+      task = @async send(server, [addr], addr, body)
+      wait(task)
+      test_content(logfile) do s
+        @test occursin("non-blocking send", s)
       end
     end
 
