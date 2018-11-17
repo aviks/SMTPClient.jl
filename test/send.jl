@@ -11,7 +11,7 @@ end
 
 @testset "Send" begin
   logfile = tempname()
-  server = "smtp://localhost:1025"
+  server = "smtp://0.0.0.0:1025"
   addr = "<julian@julialang.org>"
   mock = joinpath(dirname(@__FILE__), "mock.py")
 
