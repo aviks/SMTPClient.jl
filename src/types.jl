@@ -2,10 +2,11 @@ mutable struct SendOptions
   isSSL::Bool
   username::String
   passwd::String
+  verbose::Bool
 end
 
 function SendOptions(; isSSL::Bool = false, username::AbstractString = "",
-                     passwd::AbstractString = "", kwargs...)
+                     passwd::AbstractString = "", verbose::Bool = false, kwargs...)
   kwargs = Dict(kwargs)
   if get(kwargs, :blocking, nothing) ≠ nothing
     @warn "options `blocking` is deprecated, blocking behaviour is default now, " *
@@ -13,11 +14,12 @@ function SendOptions(; isSSL::Bool = false, username::AbstractString = "",
     pop!(kwargs, :blocking)
   end
   length(keys(kwargs)) ≠ 0 && throw(MethodError("got unsupported keyword arguments"))
-  SendOptions(isSSL, String(username), String(passwd))
+  SendOptions(isSSL, String(username), String(passwd), verbose)
 end
 
 function Base.show(io::IO, o::SendOptions)
-  print(io, "SSL:      ", o.isSSL)
+  println(io, "SSL:      ", o.isSSL)
+  print(  io, "verbose:  ", o.verbose)
   !isempty(o.username) && print(io, "\nusername: ", o.username)
 end
 
@@ -56,6 +58,7 @@ mutable struct ConnContext
   options::SendOptions
   close_ostream::Bool
   bytes_recd::Int
+  finalizer::Vector{Function}
 end
 
 function ConnContext(; curl = curl_easy_init(),
@@ -65,7 +68,7 @@ function ConnContext(; curl = curl_easy_init(),
                      options::SendOptions = SendOptions())
   curl == C_NULL && throw("curl_easy_init() failed")
 
-  ctxt = ConnContext(curl, url, rd, resp, options, false, 0)
+  ctxt = ConnContext(curl, url, rd, resp, options, false, 0, Function[])
 
   @ce_curl curl_easy_setopt curl CURLOPT_URL url
   @ce_curl curl_easy_setopt curl CURLOPT_WRITEFUNCTION c_curl_write_cb
@@ -83,12 +86,43 @@ function ConnContext(; curl = curl_easy_init(),
     @ce_curl curl_easy_setopt curl CURLOPT_PASSWORD options.passwd
   end
 
+  if options.verbose
+    @ce_curl curl_easy_setopt curl CURLOPT_VERBOSE 1
+  end
+
+  ctxt
+end
+
+function setopt!(ctxt::ConnContext, opt, val)
+  @ce_curl curl_easy_setopt ctxt.curl opt val
+  ctxt
+end
+
+setmail_from!(ctxt::ConnContext, from::String) =
+  setopt!(ctxt, CURLOPT_MAIL_FROM, from)
+
+function setmail_rcpt!(ctxt::ConnContext, R::Vector{String})
+  R′ = foldl(curl_slist_append, R, init = C_NULL)
+  R′ == C_NULL && error("mail rcpts invalid")
+  setopt!(ctxt, CURLOPT_MAIL_RCPT, R′)
+  push!(ctxt.finalizer, () -> curl_slist_free_all(R′))
+  ctxt
+end
+
+function connect(ctxt::ConnContext)
+  @ce_curl curl_easy_perform ctxt.curl
   ctxt
 end
 
 cleanup!(::Nothing) = nothing
 function cleanup!(ctxt::ConnContext)
-  ctxt.curl ≠ C_NULL && curl_easy_cleanup(ctxt.curl)
+  curl = ctxt.curl
+  curl ≠ C_NULL && curl_easy_cleanup(curl)
+
+  for f ∈ ctxt.finalizer
+    f()
+  end
+  empty!(ctxt.finalizer)
 
   if ctxt.close_ostream
     close(ctxt.resp.body)

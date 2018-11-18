@@ -64,12 +64,14 @@ Send an email.
 
 
 ```julia
-SendOptions(; isSSL = false, username = "", passwd = "")
+SendOptions(; isSSL = false, verbose = false, username = "", passwd = "")
 ```
 
 Options are passed via the `SendOptions` constructor that takes keyword arguments.
 The defaults are shown above.
-If the `username` is blank, the password is not sent even if present.
+
+- `verbose`: enable `libcurl` verbose mode or not.
+- If the `username` is blank, the `passwd` is not sent even if present.
 
 Note that no keepalive is implemented.
 New connections to the SMTP server are created for each message.

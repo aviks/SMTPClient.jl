@@ -65,6 +65,15 @@ end
       end
     end
 
+    let  # SendOptions.verbose no error
+      opts = SendOptions(verbose = true, username = "foo@example.org", passwd = "bar")
+      body = IOBuffer("SendOptions.verbose")
+      send(server, [addr], addr, body, opts)
+      test_content(logfile) do s
+        @test occursin("SendOptions.verbose", s)
+      end
+    end
+
   finally
     kill(smtpsink)
     rm(logfile, force = true)
