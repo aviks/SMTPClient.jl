@@ -12,7 +12,7 @@ function curl_write_cb(buff::Ptr{Cchar}, s::Csize_t, n::Csize_t, p::Ptr{Cvoid}):
 end
 
 function writeptr(dst::Ptr{Cchar}, rd::ReadData, n::Csize_t)::Csize_t
-  src  = read(io.src, n)
+  src = read(rd.src, n)
   n = length(src)
   ccall(:memcpy, Ptr{Cvoid}, (Ptr{Cvoid}, Ptr{Cvoid}, UInt), dst, src, n)
   n
