@@ -11,22 +11,16 @@ function curl_write_cb(buff::Ptr{Cchar}, s::Csize_t, n::Csize_t, p::Ptr{Cvoid}):
   nbytes
 end
 
+function writeptr(dst::Ptr{Cchar}, rd::ReadData, n::Csize_t)::Csize_t
+  src  = read(io.src, n)
+  n = length(src)
+  ccall(:memcpy, Ptr{Cvoid}, (Ptr{Cvoid}, Ptr{Cvoid}, UInt), dst, src, n)
+  n
+end
+
 function curl_read_cb(out::Ptr{Cchar}, s::Csize_t, n::Csize_t, p::Ptr{Cvoid})::Csize_t
   ctxt = unsafe_pointer_to_objref(p)
-  bavail = s * n
-  breq = ctxt.rd.sz - ctxt.rd.offset
-  b2copy = bavail > breq ? breq : bavail
-
-  if ctxt.rd.typ == :buffer
-    ccall(:memcpy, Ptr{Cvoid}, (Ptr{Cvoid}, Ptr{Cvoid}, UInt),
-          out, convert(Ptr{UInt8}, ctxt.rd.str) + ctxt.rd.offset, b2copy)
-  elseif ctxt.rd.typ == :io
-    b_read = read(ctxt.rd.src, b2copy)
-    ccall(:memcpy, Ptr{Cvoid}, (Ptr{Cvoid}, Ptr{Cvoid}, UInt), out, b_read, b2copy)
-  end
-  ctxt.rd.offset = ctxt.rd.offset + b2copy
-
-  b2copy
+  writeptr(out, ctxt.rd, s * n)
 end
 
 function curl_multi_timer_cb(curlm::Ptr{Cvoid}, timeout_ms::Clong, p::Ptr{Cvoid})::Cint
