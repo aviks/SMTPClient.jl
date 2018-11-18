@@ -22,14 +22,3 @@ function curl_read_cb(out::Ptr{Cchar}, s::Csize_t, n::Csize_t, p::Ptr{Cvoid})::C
   ctxt = unsafe_pointer_to_objref(p)
   writeptr(out, ctxt.rd, s * n)
 end
-
-function curl_multi_timer_cb(curlm::Ptr{Cvoid}, timeout_ms::Clong, p::Ptr{Cvoid})::Cint
-  muctxt = unsafe_pointer_to_objref(p)
-  muctxt.timeout = timeout_ms / 1000.0
-
-  @info "Requested timeout value : " * string(muctxt.timeout)
-
-  0
-end
-
-null_cb(curl) = nothing
