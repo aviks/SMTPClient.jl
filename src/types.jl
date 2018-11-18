@@ -47,7 +47,8 @@ mutable struct ReadData{T<:IO}
 end
 
 ReadData() = ReadData{IOBuffer}(:undefined, IOBuffer(), "", 0, 0)
-ReadData(src::IOBuffer) = ReadData{IOBuffer}(:io, src, "", 0, src.size)
+ReadData(io::T) where {T<:IO} = ReadData{T}(:io, io, "", 0, 0)
+ReadData(io::IOBuffer)        = ReadData{IOBuffer}(:io, io, "", 0, io.size)
 
 
 mutable struct ConnContext

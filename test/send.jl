@@ -28,6 +28,18 @@ end
       end
     end
 
+    let  # send with body::IOStream
+      mktemp() do path, io
+        write(io, "body::IOStream test")
+        seekstart(io)
+
+        send(server, [addr], addr, io)
+        test_content(logfile) do s
+          @test occursin("body::IOStream test", s)
+        end
+      end
+    end
+
     let  # AUTH PLAIN
       opts = SendOptions(username = "foo@example.org", passwd = "bar")
       body = IOBuffer("AUTH PLAIN test")

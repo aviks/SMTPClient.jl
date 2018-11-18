@@ -42,6 +42,12 @@ from = "<you@gmail.com>"
 resp = send(url, rcpt, from, body, opt)
 ```
 
+- Sending from file `IOStream` is supported:
+
+  ```julia
+  body = open("/path/to/mail")
+  ```
+
 ### Gmail Notes
 
 Due to the security policy of Gmail,
