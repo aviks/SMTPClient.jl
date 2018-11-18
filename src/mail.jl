@@ -5,21 +5,17 @@ send(url::AbstractString, to::AbstractVector{<:AbstractString},
 function do_send(url::String, to::Vector{String}, from::String, options::SendOptions,
                  rd::ReadData)
   ctxt = nothing
-  rcpts = foldl(curl_slist_append, to, init = C_NULL)
   try
     ctxt = ConnContext(url = url, rd = rd, options = options)
-    curl = ctxt.curl
 
-    @ce_curl curl_easy_setopt curl CURLOPT_MAIL_RCPT rcpts
-    @ce_curl curl_easy_setopt curl CURLOPT_MAIL_FROM from
+    setmail_from!(ctxt, from)
+    setmail_rcpt!(ctxt, to)
 
-    @ce_curl curl_easy_perform curl
+    connect(ctxt)
     getresponse!(ctxt)
-    return ctxt.resp
+
+    ctxt.resp
   finally
-    if rcpts != C_NULL
-      curl_slist_free_all(rcpts)
-    end
     cleanup!(ctxt)
   end
 end
