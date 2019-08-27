@@ -1,4 +1,4 @@
-dist: xenial
+dist: freebsd
 
 language: julia
 
@@ -10,7 +10,6 @@ addons:
       - python3.7
 
 os:
-    - linux
     - freebsd
 
 julia:
