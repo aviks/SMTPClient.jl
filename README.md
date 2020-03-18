@@ -30,12 +30,12 @@ opt = SendOptions(
   passwd = "yourgmailpassword")
 #Provide the message body as RFC5322 within an IO
 body = IOBuffer(
-  "Date: Fri, 18 Oct 2013 21:44:29 +0100\n" *
-  "From: You <you@gmail.com>\n" *
-  "To: me@test.com\n" *
-  "Subject: Julia Test\n" *
-  "\n" *
-  "Test Message\n")
+  "Date: Fri, 18 Oct 2013 21:44:29 +0100\r\n" *
+  "From: You <you@gmail.com>\r\n" *
+  "To: me@test.com\r\n" *
+  "Subject: Julia Test\r\n" *
+  "\r\n" *
+  "Test Message\r\n")
 url = "smtps://smtp.gmail.com:465"
 rcpt = ["<me@test.com>", "<foo@test.com>"]
 from = "<you@gmail.com>"
