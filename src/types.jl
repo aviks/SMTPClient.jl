@@ -80,6 +80,7 @@ function ConnContext(; curl = curl_easy_init(),
 
   if options.isSSL
     @ce_curl curl_easy_setopt curl CURLOPT_USE_SSL CURLUSESSL_ALL
+    @ce_curl curl_easy_setopt curl CURLOPT_CAINFO LibCURL.cacert
   end
 
   if !isempty(options.username)
