@@ -23,7 +23,8 @@
       try
         wait(t)
       catch e
-        @test occursin(string(errmsg), string(e))
+        @test e isa TaskFailedException
+        @test occursin(errmsg, e.task.exception.msg)
       end
     end
   end

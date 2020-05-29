@@ -2,13 +2,12 @@
 
 [![Build Status](https://travis-ci.org/aviks/SMTPClient.jl.svg?branch=master)](https://travis-ci.org/aviks/SMTPClient.jl)
 
-[![SMTPClient](http://pkg.julialang.org/badges/SMTPClient_0.6.svg)](http://pkg.julialang.org/?pkg=SMTPClient&ver=0.6)
-
 A [CURL](curl.haxx.se) based SMTP client with fairly low level API.
 It is useful for sending emails from within Julia code.
 Depends on [LibCURL.jl](https://github.com/JuliaWeb/LibCURL.jl/).
 
-SMTPClient requires Julia 0.7 or higher.
+The latest version of SMTPClient requires Julia 1.3 or higher. Versions of this package may be
+available for older Julia versions, but are not fully supported.
 
 ## Installation
 
@@ -16,8 +15,7 @@ SMTPClient requires Julia 0.7 or higher.
 Pkg.add("SMTPClient")
 ```
 
-The libCurl native library must be available.
-It is usually installed with the base system in most Unix variants.
+The LibCURL native library is automatically installed using Julia's artifact system.
 
 ## Usage
 
@@ -54,6 +52,24 @@ Due to the security policy of Gmail,
 you need to "allow less secure apps into your account":
 
 - https://myaccount.google.com/lesssecureapps
+
+The URL for gmail can be either `smtps://smtp.gmail.com:465` or `smtp://smtp.gmail.com:587`.
+(Note the extra `s` in the former.)
+Both use SSL, and thus `isSSL` must be set to `true` in `SendOptions`. The latter starts
+the connection with plain text, and converts it to secured before sending any data using a
+protocol extension called `STARTTLS`. Gmail documentation suggests using this latter setup.
+
+### Troubleshooting
+
+Since this package is a pretty thin wrapper around a low level network protocol, it helps
+to know the basics of SMTP while troubleshooting this package. Here is a [quick overview of SMTP](https://utcc.utoronto.ca/usg/technotes/smtp-intro.html). In particular, please pay attention to the difference
+between the `envelope headers` and the `message headers`.
+
+If you are having trouble with sending email, set `verbose=true` when creating the `SendOptions` object.
+Please always do this before submitting a bugreport to this project.
+
+When sending email over SSL, certificate verification is performed, which requires the presence of a
+certificate authority bundle. This package uses the [CA bundle from the Mozilla](https://curl.haxx.se/docs/caextract.html) project. Currently there is no way to specify a private CA bundle. Modify the source if you need this.  
 
 ## Function Reference
 
