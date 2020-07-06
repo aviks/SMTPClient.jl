@@ -1,6 +1,10 @@
 # SMTPClient
 
 [![Build Status](https://travis-ci.org/aviks/SMTPClient.jl.svg?branch=master)](https://travis-ci.org/aviks/SMTPClient.jl)
+[![Latest Version](https://juliahub.com/docs/SMTPClient/version.svg)](https://juliahub.com/ui/Packages/SMTPClient/Bx8Fn/)
+[![Pkg Eval](https://juliahub.com/docs/SMTPClient/pkgeval.svg)](https://juliahub.com/ui/Packages/SMTPClient/Bx8Fn/)
+[![Dependents](https://juliahub.com/docs/SMTPClient/deps.svg)](https://juliahub.com/ui/Packages/SMTPClient/Bx8Fn/?t=2)
+
 
 A [CURL](curl.haxx.se) based SMTP client with fairly low level API.
 It is useful for sending emails from within Julia code.
