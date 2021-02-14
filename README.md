@@ -50,6 +50,22 @@ resp = send(url, rcpt, from, body, opt)
   body = open("/path/to/mail")
   ```
 
+### Example with HTML Formatting
+```
+body = "Subject: A simple test\r\n"*
+    "Mime-Version: 1.0;\r\n"*
+    "Content-Type: text/html;\r\n"*
+    "Content-Transfer-Encoding: 7bit;\r\n"*
+    "\r\n"*
+    """<html>
+    <body>
+    <h2>An important link to look at!</h2>
+    Here's an <a href="https://github.com/aviks/SMTPClient.jl">important link</a>
+    </body>
+    </html>\r\n"""
+```
+
+
 ### Gmail Notes
 
 Due to the security policy of Gmail,
