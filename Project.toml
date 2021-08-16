@@ -1,19 +1,20 @@
 name = "SMTPClient"
 uuid = "c35d69d1-b747-5018-a192-25bc5e63c83d"
 authors = ["Avik Sengupta <avik@sengupta.net>", "Iblis Lin <iblis@hs.ntnu.edu.tw>"]
-version = "0.6.0"
+version = "0.6.1"
 
 [deps]
+Base64 = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 LibCURL = "b27032c2-a3e7-50c8-80cd-2d36dbcbfd21"
 Sockets = "6462fe0b-24de-5631-8697-dd941f90decc"
 
+[compat]
+LibCURL = "0.6"
+julia = "1.3"
+
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[compat]
-julia = "1.3"
-LibCURL = "0.6"
 
 [targets]
 test = ["Test"]

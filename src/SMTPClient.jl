@@ -4,14 +4,18 @@ using Distributed
 using LibCURL
 
 import Base: convert
+import Base64: Base64EncodePipe
 import Sockets: send
 
 export SendOptions, SendResponse, send
+export get_body, get_message
 
 include("utils.jl")
 include("types.jl")
 include("cbs.jl")  # callbacks
 include("mail.jl")
+include("mime_types.jl")
+include("user.jl")
 
 ##############################
 # Module init/cleanup
