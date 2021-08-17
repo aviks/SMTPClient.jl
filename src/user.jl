@@ -73,9 +73,15 @@ function get_body(
 
     boundary = "Julia_SMTPClient-" * join(rand(collect(vcat('0':'9','A':'Z','a':'z')), 40))
 
+    tz = mapreduce(
+        x -> string(x, pad=2), *,
+        divrem( div( ( now() - now(Dates.UTC) ).value, 60000 ), 60 )
+    )
+    date = Dates.format(now(), "e, d u yyyy HH:MM:SS", locale="english") * tz
+
     contents = 
         "From: $from\r\n" *
-        "Date: Fri, 18 Oct 2013 21:44:29 +0100\r\n" *
+        "Date: Fri, $date\r\n" *
         "Subject: $subject\r\n" *
         ifelse(length(cc) > 0, "Cc: $(join(cc, ", "))\r\n", "") *
         ifelse(length(replyto) > 0, "Reply-To: $replyto\r\n", "") *

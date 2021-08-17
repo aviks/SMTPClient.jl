@@ -2,9 +2,10 @@ module SMTPClient
 
 using Distributed
 using LibCURL
+using Dates
+using Base64
 
 import Base: convert
-import Base64: Base64EncodePipe
 import Sockets: send
 
 export SendOptions, SendResponse, send
