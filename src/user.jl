@@ -77,11 +77,11 @@ function get_body(
         x -> string(x, pad=2), *,
         divrem( div( ( now() - now(Dates.UTC) ).value, 60000 ), 60 )
     )
-    date = Dates.format(now(), "e, d u yyyy HH:MM:SS", locale="english") * tz
+    date = join([Dates.format(now(), "e, d u yyyy HH:MM:SS", locale="english"), tz], " ")
 
     contents = 
         "From: $from\r\n" *
-        "Date: Fri, $date\r\n" *
+        "Date: $date\r\n" *
         "Subject: $subject\r\n" *
         ifelse(length(cc) > 0, "Cc: $(join(cc, ", "))\r\n", "") *
         ifelse(length(replyto) > 0, "Reply-To: $replyto\r\n", "") *
