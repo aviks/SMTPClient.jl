@@ -80,7 +80,6 @@ function get_body(
     date = Dates.format(now(), "e, d u yyyy HH:MM:SS", locale="english") * tz
 
     contents = 
-        "\r\n" *
         "From: $from\r\n" *
         "Date: Fri, $date\r\n" *
         "Subject: $subject\r\n" *
