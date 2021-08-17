@@ -131,7 +131,7 @@ end
         message = "body mime message with extra fields"
         subject = "test message with extra fields"
 
-        mime_message = get_mime_msg(message, Val(:utf8))
+        mime_message = get_mime_msg(message)
         from = addr
         to = ["<foo@example.org>", "<bar@example.org>"]
         cc = ["<baz@example.org>", "<qux@example.org>"]

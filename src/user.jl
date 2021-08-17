@@ -47,6 +47,8 @@ get_mime_msg(message::String, ::Val{:utf8}) =
 get_mime_msg(message::String, ::Val{:usascii}) =
     get_mime_msg(message, Val(:plain), "US-ASCII")
 
+get_mime_msg(message::String) = get_mime_msg(message, Val(:utf8))
+
 function get_mime_msg(message::String, ::Val{:html})
     msg = 
         "Content-Type: text/html;\r\n" *
