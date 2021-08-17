@@ -77,6 +77,8 @@ The attachments are encoded using `Base64.base64encode` and included in the IOBu
 
 In case an attachment is to be added, the `msg` argument must be formatted according to the MIME specifications. In order to help with that, another function, `get_mime_msg(message)`, is provided, which takes the provided message and returns the message with the proper MIME specifications. By default, it assumes plain text with UTF-8 encoding, but plain text with different encodings or HTML text can also be given can be given (see [src/user.jl#L36](src/user.jl#L35) for the arguments).
 
+As for blind carbon copy (Bcc), it is implicitly handled by `send()`. Every recipient in `send()` which is not included in `body` is treated as a Bcc.
+
 Here are two examples:
 
 ```julia
@@ -95,12 +97,13 @@ subject = "SMPTClient.jl"
 
 to = ["<me@test.com>"]
 cc = ["<foo@test.com>"]
+bcc = ["<bar@test.com>"]
 from = "<you@test.com>"
 replyto = "<you@gmail.com"
 
 body = get_body(to, from, subject, message; cc, replyto)
 
-rcpt = vcat(to, cc)
+rcpt = vcat(to, cc, bcc)
 resp = send(url, rcpt, from, body, opt)
 ```
 
