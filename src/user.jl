@@ -59,6 +59,8 @@ end
 
 #Provide the message body as RFC5322 within an IO
 
+"""
+"""
 function get_body(
         to::Vector{String},
         from::String,
@@ -69,9 +71,9 @@ function get_body(
         attachment::Vector{String} = String[]
     )
 
-    boundary = "Julia_SMTPClient-" * join(rand(collect(vcat('a':'z','0':'9','A':'Z')), 40))
+    boundary = "Julia_SMTPClient-" * join(rand(collect(vcat('0':'9','A':'Z','a':'z')), 40))
 
-    top = 
+    contents = 
         "From: $from\r\n" *
         "Date: Fri, 18 Oct 2013 21:44:29 +0100\r\n" *
         "Subject: $subject\r\n" *
@@ -80,14 +82,11 @@ function get_body(
         "To: $(join(to, ", "))\r\n"
 
     if length(attachment) == 0
-        body = IOBuffer(
-            top *
+        contents *=
             "MIME-Version: 1.0\r\n" *
             "$mime_msg\r\n\r\n"
-        )
     else
-        body = IOBuffer(
-            top *
+        contents *=
             "Content-Type: multipart/mixed; boundary=\"$boundary\"\r\n\r\n" *
             "MIME-Version: 1.0\r\n" *
             "\r\n" *
@@ -97,7 +96,7 @@ function get_body(
             "--$boundary\r\n" * 
             "\r\n" *
             join(encode_attachment.(attachment, boundary), "\r\n")
-        )
     end
+    body = IOBuffer(contents)
     return body
 end
