@@ -5,7 +5,6 @@
 [![Pkg Eval](https://juliahub.com/docs/SMTPClient/pkgeval.svg)](https://juliahub.com/ui/Packages/SMTPClient/Bx8Fn/)
 [![Dependents](https://juliahub.com/docs/SMTPClient/deps.svg)](https://juliahub.com/ui/Packages/SMTPClient/Bx8Fn/?t=2)
 
-
 A [CURL](curl.haxx.se) based SMTP client with fairly low level API.
 It is useful for sending emails from within Julia code.
 Depends on [LibCURL.jl](https://github.com/JuliaWeb/LibCURL.jl/).
@@ -51,7 +50,8 @@ resp = send(url, rcpt, from, body, opt)
   ```
 
 ### Example with HTML Formatting
-```
+
+```julia
 body = "Subject: A simple test\r\n"*
     "Mime-Version: 1.0;\r\n"*
     "Content-Type: text/html;\r\n"*
@@ -65,13 +65,12 @@ body = "Subject: A simple test\r\n"*
     </html>\r\n"""
 ```
 
-
 ### Gmail Notes
 
 Due to the security policy of Gmail,
 you need to "allow less secure apps into your account":
 
-- https://myaccount.google.com/lesssecureapps
+- <https://myaccount.google.com/lesssecureapps>
 
 The URL for gmail can be either `smtps://smtp.gmail.com:465` or `smtp://smtp.gmail.com:587`.
 (Note the extra `s` in the former.)
@@ -98,12 +97,12 @@ send(url, to-addresses, from-address, message-body, options)
 ```
 
 Send an email.
-  * `url` should be of the form `smtp://server:port` or `smtps://...`.
-  * `to-address` is a vector of `String`.
-  * `from-address` is a `String`. All addresses must be enclosed in angle brackets.
-  * `message-body` must be a RFC5322 formatted message body provided via an `IO`.
-  * `options` is an object of type `SendOptions`. It contains authentication information, as well as the option of whether the server requires TLS.
 
+* `url` should be of the form `smtp://server:port` or `smtps://...`.
+* `to-address` is a vector of `String`.
+* `from-address` is a `String`. All addresses must be enclosed in angle brackets.
+* `message-body` must be a RFC5322 formatted message body provided via an `IO`.
+* `options` is an object of type `SendOptions`. It contains authentication information, as well as the option of whether the server requires TLS.
 
 ```julia
 SendOptions(; isSSL = false, verbose = false, username = "", passwd = "")
