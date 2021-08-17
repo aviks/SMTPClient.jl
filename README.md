@@ -65,6 +65,55 @@ body = "Subject: A simple test\r\n"*
     </html>\r\n"""
 ```
 
+### Function to construct the IOBuffer body and for adding attachments
+
+A new function `get_body()` is available to facilitate constructing the IOBuffer for the body of the message and for adding attachments.
+
+The function takes four required arguments: the `to` and `from` email addresses, a `subject` string, and a `msg` string. The `to` argument is a vector of strings, containing one or more email addresses. The `msg` string can be a regular string with the contents of the message or a string in MIME format.
+
+There are also the optional keyword arguments `cc`, `replyto` and `attachments`. The argument `cc` should be a vector of strings, containing one or more email addresses, while `replyto` is a string expected to contain a single argument, just like `from`. The `attachments` argument should be a list of filenames to be attached to the message.
+
+The attachments are encoded using `Base64.base64encode` and included in the IOBuffer variable returned by the function. The function `get_body()` takes care of identifying which type of attachments are to be included (from the filename extensions) and to properly add them according to the MIME specifications.
+
+In case an attachment is to be added, the `msg` argument must be formatted according to the MIME specifications. In order to help with that, another function, `get_mime_msg(message)`, is provided, which takes the provided message and returns the message with the proper MIME specifications. By default, it assumes plain text with UTF-8 encoding, but plain text with different encodings or HTML text can also be given can be given (see [src/user.jl#L36](src/user.jl#L35) for the arguments).
+
+Here are two examples:
+
+```julia
+using SMTPClient
+
+opt = SendOptions(
+  isSSL = true,
+  username = "you@gmail.com",
+  passwd = "yourgmailpassword"
+)
+
+url = "smtps://smtp.gmail.com:465"
+
+message = "Don't forget to check out SMTPClient.jl"
+subject = "SMPTClient.jl"
+
+to = ["<me@test.com>"]
+cc = ["<foo@test.com>"]
+from = "<you@test.com>"
+replyto = "<you@gmail.com"
+
+body = get_body(to, from, subject, message; cc, replyto)
+
+rcpt = vcat(to, cc)
+resp = send(url, rcpt, from, body, opt)
+```
+
+```julia
+message = "Check out this cool logo!"
+subject = "Julia logo"
+attachments = ["julia_logo_color.svg"]
+
+mime_msg = get_mime_msg(message)
+
+body = get_body(to, from, subject, mime_msg; attachments)
+```
+
 ### Gmail Notes
 
 Due to the security policy of Gmail,
