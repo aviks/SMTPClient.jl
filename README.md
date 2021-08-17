@@ -95,11 +95,11 @@ url = "smtps://smtp.gmail.com:465"
 message = "Don't forget to check out SMTPClient.jl"
 subject = "SMPTClient.jl"
 
-to = ["<me@test.com>"]
-cc = ["<foo@test.com>"]
-bcc = ["<bar@test.com>"]
-from = "<you@test.com>"
-replyto = "<you@gmail.com"
+to = ["<foo@test.com>"]
+cc = ["<bar@test.com>"]
+bcc = ["<baz@test.com>"]
+from = "You <you@test.com>"
+replyto = "<you@gmail.com>"
 
 body = get_body(to, from, subject, message; cc, replyto)
 
