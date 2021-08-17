@@ -49,9 +49,9 @@ get_message(message::String, ::Val{:usascii}) =
 
 function get_message(message::String, ::Val{:html})
     mime_msg = 
-        "Content-Type: text/html;\r\n"*
-        "Content-Transfer-Encoding: 7bit;\r\n\r\n"*
-        "\r\n"*
+        "Content-Type: text/html;\r\n" *
+        "Content-Transfer-Encoding: 7bit;\r\n\r\n" *
+        "\r\n" *
         message *
         "\r\n"
     return mime_msg
@@ -69,7 +69,7 @@ function get_body(
         attachment::Vector{String} = String[]
     )
 
-    boundary = "JuliaSMTPClientviaCurl"
+    boundary = "Julia_SMTPClient-" * join(rand(collect(vcat('a':'z','0':'9','A':'Z')), 40))
 
     top = 
         "From: $from\r\n" *
@@ -94,7 +94,6 @@ function get_body(
             "This is a message with multiple parts in MIME format.\r\n" *
             "--$boundary\r\n" * 
             "$mime_msg\r\n" *
-            "\r\n" *
             "--$boundary\r\n" * 
             "\r\n" *
             join(encode_attachment.(attachment, boundary), "\r\n")
