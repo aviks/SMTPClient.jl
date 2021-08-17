@@ -69,7 +69,7 @@ body = "Subject: A simple test\r\n"*
 
 A new function `get_body()` is available to facilitate constructing the IOBuffer for the body of the message and for adding attachments.
 
-The function takes four required arguments: the `to` and `from` email addresses, a `subject` string, and a `msg` string. The `to` argument is a vector of strings, containing one or more email addresses. The `msg` string can be a regular string with the contents of the message or a string in MIME format.
+The function takes four required arguments: the `to` and `from` email addresses, a `subject` string, and a `msg` string. The `to` argument is a vector of strings, containing one or more email addresses. The `msg` string can be a regular string with the contents of the message or a string in MIME format, following the [RFC5322](https://datatracker.ietf.org/doc/html/rfc5322) specifications.
 
 There are also the optional keyword arguments `cc`, `replyto` and `attachments`. The argument `cc` should be a vector of strings, containing one or more email addresses, while `replyto` is a string expected to contain a single argument, just like `from`. The `attachments` argument should be a list of filenames to be attached to the message.
 
