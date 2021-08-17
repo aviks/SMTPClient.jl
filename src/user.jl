@@ -68,7 +68,7 @@ function get_body(
         msg::String;
         cc::Vector{String} = String[],
         replyto::String = "",
-        attachment::Vector{String} = String[]
+        attachments::Vector{String} = String[]
     )
 
     boundary = "Julia_SMTPClient-" * join(rand(collect(vcat('0':'9','A':'Z','a':'z')), 40))
@@ -81,7 +81,7 @@ function get_body(
         ifelse(length(replyto) > 0, "Reply-To: $replyto\r\n", "") *
         "To: $(join(to, ", "))\r\n"
 
-    if length(attachment) == 0
+    if length(attachments) == 0
         contents *=
             "MIME-Version: 1.0\r\n" *
             "$msg\r\n\r\n"
@@ -95,7 +95,7 @@ function get_body(
             "$msg\r\n" *
             "--$boundary\r\n" * 
             "\r\n" *
-            join(encode_attachment.(attachment, boundary), "\r\n")
+            join(encode_attachment.(attachments, boundary), "\r\n")
     end
     body = IOBuffer(contents)
     return body

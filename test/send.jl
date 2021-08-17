@@ -179,8 +179,8 @@ end
       readme = open(f->read(f, String), joinpath("..", "README.md"))
 
       mime_message = get_mime_msg(message, Val(:utf8))
-      attachment = [joinpath("..", "README.md"), filename]
-      body = get_body([addr], addr, subject, mime_message, attachment = attachment)
+      attachments = [joinpath("..", "README.md"), filename]
+      body = get_body([addr], addr, subject, mime_message, attachments = attachments)
     
       send(server, [addr], addr, body)
 
