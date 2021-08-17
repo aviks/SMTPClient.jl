@@ -90,7 +90,7 @@ end
       message = "body mime message"
       subject = "test message"
 
-      mime_message = get_message(message, Val(:usascii))
+      mime_message = get_mime_msg(message, Val(:usascii))
       body = get_body([addr], addr, subject, mime_message)
   
       send(server, [addr], addr, body)
@@ -111,7 +111,7 @@ end
         "∀∂∈ℝ∧∪≡∞ ↑↗↨↻⇣ ┐┼╔╘░►☺♀ ﬁ�⑀₂ἠḂӥẄɐː⍎אԱა\r\n"
       subject = "test message in UTF-8"
 
-      mime_message = get_message(message, Val(:utf8))
+      mime_message = get_mime_msg(message, Val(:utf8))
       body = get_body([addr], addr, subject, mime_message)
     
       send(server, [addr], addr, body)
@@ -131,7 +131,7 @@ end
         message = "body mime message with extra fields"
         subject = "test message with extra fields"
 
-        mime_message = get_message(message, Val(:utf8))
+        mime_message = get_mime_msg(message, Val(:utf8))
         from = addr
         to = ["<foo@example.org>", "<bar@example.org>"]
         cc = ["<baz@example.org>", "<qux@example.org>"]
@@ -178,7 +178,7 @@ end
       end
       readme = open(f->read(f, String), joinpath("..", "README.md"))
 
-      mime_message = get_message(message, Val(:utf8))
+      mime_message = get_mime_msg(message, Val(:utf8))
       attachment = [joinpath("..", "README.md"), filename]
       body = get_body([addr], addr, subject, mime_message, attachment = attachment)
     

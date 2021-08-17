@@ -8,7 +8,7 @@ import Base64: Base64EncodePipe
 import Sockets: send
 
 export SendOptions, SendResponse, send
-export get_body, get_message
+export get_body, get_mime_msg
 
 include("utils.jl")
 include("types.jl")
