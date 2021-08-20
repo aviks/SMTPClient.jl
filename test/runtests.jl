@@ -1,4 +1,5 @@
 using Test
+import Base64: base64decode
 using SMTPClient
 
 

@@ -2,16 +2,21 @@ module SMTPClient
 
 using Distributed
 using LibCURL
+using Dates
+using Base64
 
 import Base: convert
 import Sockets: send
 
 export SendOptions, SendResponse, send
+export get_body, get_mime_msg
 
 include("utils.jl")
 include("types.jl")
 include("cbs.jl")  # callbacks
 include("mail.jl")
+include("mime_types.jl")
+include("user.jl")
 
 ##############################
 # Module init/cleanup
