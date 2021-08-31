@@ -54,10 +54,15 @@ function get_mime_msg(message::String, ::Val{:html})
         "Content-Type: text/html;\r\n" *
         "Content-Transfer-Encoding: 7bit;\r\n\r\n" *
         "\r\n" *
+        "<html>\r\n<body>" *
         message *
-        "\r\n"
+        "</body>\r\n</html>\r\n"
     return msg
 end
+
+get_mime_msg(message::HTML{String}) = get_mime_msg(message.content, Val(:html))
+
+get_mime_msg(message::Markdown.MD) = get_mime_msg(Markdown.html(message), Val(:html))
 
 #Provide the message body as RFC5322 within an IO
 
