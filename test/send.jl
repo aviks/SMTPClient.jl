@@ -159,9 +159,11 @@ end
     end
 
     let  # send using get_body with HTML string encoded message
-      message = md"""# An important link to look at!
-      
-      Here's an [important link](https://github.com/aviks/SMTPClient.jl)"""
+      message = Markdown.parse(
+          """# An important link to look at!
+
+          Here's an [important link](https://github.com/aviks/SMTPClient.jl)"""
+      )
   
       subject = "test message in Markdown"
     
@@ -262,11 +264,13 @@ end
     end
 
     let  # send with attachment and markdown message
-        message = md"""# An important link to look at!
-      
-        Here's an [important link](https://github.com/aviks/SMTPClient.jl)
-        
-        And don't forget to check out the attached *cool* **julia** logo."""
+        message = Markdown.parse(
+          """# An important link to look at!
+          
+          Here's an [important link](https://github.com/aviks/SMTPClient.jl)
+
+          And don't forget to check out the attached *cool* **julia** logo."""
+        )
 
         subject = "test message with attachment"
         svg_str = """<?xml version="1.0" encoding="UTF-8"?>
