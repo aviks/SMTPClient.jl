@@ -26,6 +26,7 @@ function encode_attachment(filename::String, boundary::String)
         "    filename=$(basename(filename))\r\n" *
         "Content-Type: $content_type;\r\n" *
         "    name=\"$(basename(filename))\"\r\n" *
+        "Content-ID: <$(basename(filename))>\r\n" *
         "Content-Transfer-Encoding: base64\r\n" *
         "$(String(take!(io)))\r\n" *
         "--$boundary\r\n"
@@ -56,7 +57,7 @@ function get_mime_msg(message::String, ::Val{:html})
         "\r\n" *
         "<html>\r\n<body>" *
         message *
-        "</body>\r\n</html>\r\n"
+        "</body>\r\n</html>"
     return msg
 end
 
