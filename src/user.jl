@@ -27,7 +27,7 @@ function encode_attachment(filename::String)
         "    name=\"$(basename(filename))\"\r\n" *
         "Content-Transfer-Encoding: base64\r\n" *
         "\r\n" *
-        "$(String(take!(io)))\r\n" *
+        "$(String(take!(io)))\r\n"
     return encoded_str
 end
 
