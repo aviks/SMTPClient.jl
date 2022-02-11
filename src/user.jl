@@ -99,7 +99,7 @@ function get_body(
             "--$boundary\r\n" * 
             msg *
             "\r\n--$boundary\r\n" * 
-            join(encode_attachment.(attachments, boundary), "\r\n--$boundary\r\n") *
+            join(encode_attachment.(attachments), "\r\n--$boundary\r\n") *
             "\r\n--$boundary--\r\n"
     end
     body = IOBuffer(contents)
