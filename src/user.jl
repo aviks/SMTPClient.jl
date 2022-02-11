@@ -1,4 +1,4 @@
-function encode_attachment(filename::String, boundary::String)
+function encode_attachment(filename::String)
     io = IOBuffer()
     iob64_encode = Base64EncodePipe(io)
     open(filename, "r") do f
@@ -21,14 +21,13 @@ function encode_attachment(filename::String, boundary::String)
     end
 
     encoded_str = 
-        "--$boundary\r\n" *
         "Content-Disposition: $content_disposition;\r\n" *
         "    filename=$(basename(filename))\r\n" *
         "Content-Type: $content_type;\r\n" *
         "    name=\"$(basename(filename))\"\r\n" *
         "Content-Transfer-Encoding: base64\r\n" *
+        "\r\n" *
         "$(String(take!(io)))\r\n" *
-        "--$boundary\r\n"
     return encoded_str
 end
 
@@ -93,15 +92,15 @@ function get_body(
             "$msg\r\n\r\n"
     else
         contents *=
-            "Content-Type: multipart/mixed; boundary=\"$boundary\"\r\n\r\n" *
+            "Content-Type: multipart/mixed; boundary=\"$boundary\"\r\n" *
             "MIME-Version: 1.0\r\n" *
             "\r\n" *
             "This is a message with multiple parts in MIME format.\r\n" *
             "--$boundary\r\n" * 
-            "$msg\r\n" *
-            "--$boundary\r\n" * 
-            "\r\n" *
-            join(encode_attachment.(attachments, boundary), "\r\n")
+            msg *
+            "\r\n--$boundary\r\n" * 
+            join(encode_attachment.(attachments, boundary), "\r\n--$boundary\r\n") *
+            "\r\n--$boundary--\r\n"
     end
     body = IOBuffer(contents)
     return body
