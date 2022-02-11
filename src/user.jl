@@ -26,6 +26,7 @@ function encode_attachment(filename::String, boundary::String)
         "    filename=$(basename(filename))\r\n" *
         "Content-Type: $content_type;\r\n" *
         "    name=\"$(basename(filename))\"\r\n" *
+        "Content-ID: <$(basename(filename))>\r\n" *
         "Content-Transfer-Encoding: base64\r\n" *
         "$(String(take!(io)))\r\n" *
         "--$boundary\r\n"
@@ -54,10 +55,15 @@ function get_mime_msg(message::String, ::Val{:html})
         "Content-Type: text/html;\r\n" *
         "Content-Transfer-Encoding: 7bit;\r\n\r\n" *
         "\r\n" *
+        "<html>\r\n<body>" *
         message *
-        "\r\n"
+        "</body>\r\n</html>"
     return msg
 end
+
+get_mime_msg(message::HTML{String}) = get_mime_msg(message.content, Val(:html))
+
+get_mime_msg(message::Markdown.MD) = get_mime_msg(Markdown.html(message), Val(:html))
 
 #Provide the message body as RFC5322 within an IO
 

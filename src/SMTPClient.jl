@@ -4,6 +4,7 @@ using Distributed
 using LibCURL
 using Dates
 using Base64
+using Markdown
 
 import Base: convert
 import Sockets: send
