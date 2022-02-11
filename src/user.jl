@@ -35,7 +35,7 @@ end
 # See https://www.w3.org/Protocols/rfc1341/7_1_Text.html about charset
 function get_mime_msg(message::String, ::Val{:plain}, charset::String = "UTF-8")
     msg = 
-        "Content-Type: text/plain; charset=\"$charset\"" *
+        "Content-Type: text/plain; charset=\"$charset\"\r\n" *
         "Content-Transfer-Encoding: quoted-printable\r\n\r\n" *
         "$message\r\n"
     return msg
