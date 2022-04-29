@@ -22,7 +22,7 @@ function encode_attachment(filename::String)
 
     encoded_str = 
         "Content-Disposition: $content_disposition;\r\n" *
-        "    filename=$(basename(filename))\r\n" *
+        "    filename=\"$(basename(filename))\"\r\n" *
         "Content-Type: $content_type;\r\n" *
         "    name=\"$(basename(filename))\"\r\n" *
         "Content-ID: <$(basename(filename))>\r\n" *
