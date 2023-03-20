@@ -20,7 +20,24 @@ function encode_attachment(filename::String)
         content_disposition = "attachment"
     end
 
-    encoded_str = 
+    # Some email clients, like Spark Mail, have problems when the attachment
+    # encoded string is very long. This code breaks the payload into lines with
+    # 75 characters, avoiding those problems.
+    raw_attachment = String(take!(io))
+    buf = IOBuffer()
+    char_count = 0
+
+    for c in raw_attachment
+        write(buf, c)
+        char_count += 1
+
+        if char_count == 75
+            write(buf, "\r\n")
+            char_count = 0
+        end
+    end
+
+    encoded_str =
         "Content-Disposition: $content_disposition;\r\n" *
         "    filename=\"$(basename(filename))\"\r\n" *
         "Content-Type: $content_type;\r\n" *
@@ -28,7 +45,7 @@ function encode_attachment(filename::String)
         "Content-ID: <$(basename(filename))>\r\n" *
         "Content-Transfer-Encoding: base64\r\n" *
         "\r\n" *
-        "$(String(take!(io)))\r\n"
+        "$(String(take!(buf)))\r\n"
     return encoded_str
 end
 
