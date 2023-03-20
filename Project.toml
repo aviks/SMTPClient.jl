@@ -1,7 +1,7 @@
 name = "SMTPClient"
 uuid = "c35d69d1-b747-5018-a192-25bc5e63c83d"
 authors = ["Avik Sengupta <avik@sengupta.net>", "Iblis Lin <iblis@hs.ntnu.edu.tw>"]
-version = "0.6.3"
+version = "0.6.4"
 
 [deps]
 Base64 = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
