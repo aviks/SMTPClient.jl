@@ -15,7 +15,7 @@ end
   addr = "<julian@julialang.org>"
   mock = joinpath(dirname(@__FILE__), "mock.py")
 
-  cmd = `python3.7 $mock $logfile`
+  cmd = `python3 $mock $logfile`
   smtpsink = run(pipeline(cmd, stderr=stdout), wait = false)
   sleep(.5)  # wait for fake smtp server ready
 
