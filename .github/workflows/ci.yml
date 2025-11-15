@@ -14,7 +14,8 @@ jobs:
       matrix:
         version:
           - '1.6'
-          - 'nightly'
+          - '1.10'
+          - '1.0'
         os:
           - ubuntu-latest
           - macOS-latest
@@ -36,6 +37,11 @@ jobs:
           - {arch: 'x86', version: 'nightly'}
     steps:
       - uses: actions/checkout@v1
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - run: pip install -r test/requirements.txt
       - uses: julia-actions/setup-julia@latest
         with:
           version: ${{ matrix.version }}
