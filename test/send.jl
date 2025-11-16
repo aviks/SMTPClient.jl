@@ -103,6 +103,7 @@ end
       end
     end
 
+    if !Sys.iswindows() # On windows, the mock server fails with an encoding error :( 
     let  # send using get_body with UTF-8 encoded message
       message = 
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ /0123456789\r\n" *
@@ -126,7 +127,8 @@ end
         @test occursin("∀∂∈ℝ∧∪≡∞ ↑↗↨↻⇣ ┐┼╔╘░►☺♀ ﬁ�⑀₂ἠḂӥẄɐː⍎אԱა", s)
       end
     end
-
+    end # !Sys.iswindows()
+    
     let  # send using get_body with HTML string encoded message
       message = HTML(
         """<h2>An important link to look at!</h2>
