@@ -13,7 +13,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - {os: 'macOS-latest', arch: 'aarch64', version: 'lts'}
           - {os: 'windows-latest', arch: 'x64',  version: 'lts'}
           - {os: 'ubuntu-latest', arch: 'x86', version: 'lts'}
           - {os: 'ubuntu-latest', arch: 'x64', version: 'lts'}
