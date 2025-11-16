@@ -1,6 +1,6 @@
 @testset "Errors" begin
   @testset "Error message for Humans(TM)" begin
-    let errmsg = "Couldn't resolve host name"
+    let errmsg = "resolve host"
       server = "smtp://nonexists"
       body = IOBuffer("test")
 
@@ -15,7 +15,7 @@
 
 
   @testset "Non-blocking send" begin
-    let errmsg = "Couldn't resolve host name"
+    let errmsg = "resolve host"
       server = "smtp://nonexists"
       body = IOBuffer("test")
 
