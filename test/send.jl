@@ -248,7 +248,7 @@ end
       send(server, [addr], addr, body)
 
       test_content(logfile) do s
-        m = match(r"Content-Type:\s*multipart\/mixed;\s*boundary=\"(.+)\"\n", s)
+        m = match(r"Content-Type:\s*multipart\/mixed;\s*boundary=\"(.+)\"[\r\n]+", s)
         @test m !== nothing
         boundary = m.captures[1]
         @test occursin("To: $addr", s)
@@ -256,9 +256,9 @@ end
         @test occursin(message, s)
         splt = split(s)
         ind = findall(v -> occursin("--$boundary", v), splt)
-        @test length(ind) == 6
-        @test String(base64decode(splt[ind[4]-1])) == readme
-        @test String(base64decode(splt[ind[6]-1])) == svg_str
+        @test length(ind) == 4
+        @test String(base64decode( join(string.(splt[ind[2]+11:ind[3]-1]), "\r\n") )) == readme
+        @test String(base64decode( join(string.(splt[ind[3]+11:ind[4]-1]), "\r\n") )) == svg_str
       end
       rm(filename)
     end
@@ -297,7 +297,7 @@ end
         send(server, [addr], addr, body)
   
         test_content(logfile) do s
-          m = match(r"Content-Type:\s*multipart\/mixed;\s*boundary=\"(.+)\"\n", s)
+          m = match(r"Content-Type:\s*multipart\/mixed;\s*boundary=\"(.+)\"[\r\n]+", s)
           @test m !== nothing
           boundary = m.captures[1]
           @test occursin("To: $addr", s)
@@ -317,9 +317,9 @@ end
           @test occursin("</html>", s)
           splt = split(s)
           ind = findall(v -> occursin("--$boundary", v), splt)
-          @test length(ind) == 6
-          @test String(base64decode(splt[ind[4]-1])) == readme
-          @test String(base64decode(splt[ind[6]-1])) == svg_str
+          @test length(ind) == 4
+          @test String(base64decode( join(string.(splt[ind[2]+11:ind[3]-1]), "\r\n") )) == readme
+          @test String(base64decode( join(string.(splt[ind[3]+11:ind[4]-1]), "\r\n") )) == svg_str
         end
         rm(filename)
       end
