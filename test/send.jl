@@ -131,7 +131,7 @@ end
     
     let  # send using get_body with HTML string encoded message
       message = HTML(
-        """<h2>An important link to look at!</h2>
+        """<h2>An important link to look at! ©</h2>
         Here's an <a href="https://github.com/aviks/SMTPClient.jl">important link</a>\r\n"""
       )
 
@@ -150,7 +150,7 @@ end
         @test occursin("Content-Transfer-Encoding: 7bit;", s)
         @test occursin("<html>", s)
         @test occursin("<body>", s)
-        @test occursin("<h2>An important link to look at!</h2>", s)
+        @test occursin("<h2>An important link to look at! &#169;</h2>", s)
         @test occursin(
             "<a href=\"https://github.com/aviks/SMTPClient.jl\">important link</a>",
             s

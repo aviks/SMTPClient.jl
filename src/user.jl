@@ -67,6 +67,11 @@ get_mime_msg(message::String, ::Val{:usascii}) =
 get_mime_msg(message::String) = get_mime_msg(message, Val(:utf8))
 
 function get_mime_msg(message::String, ::Val{:html})
+    message_bytes = collect(message)
+    if !isnothing(findfirst(>(Char(0x7f)), message_bytes))
+        # Message contains non-ASCII characters (non 7-bit safe) that we need to HTML encode
+        message = join(map(c -> c > Char(0x7f) ? "&#$(codepoint(c));" : c, message_bytes), "")
+    end
     msg = 
         "Content-Type: text/html;\r\n" *
         "Content-Transfer-Encoding: 7bit;\r\n\r\n" *
