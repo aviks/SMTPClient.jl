@@ -103,6 +103,7 @@ end
       end
     end
 
+    if !Sys.iswindows() # On windows, the mock server fails with an encoding error :( 
     let  # send using get_body with UTF-8 encoded message
       message = 
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ /0123456789\r\n" *
@@ -126,7 +127,8 @@ end
         @test occursin("∀∂∈ℝ∧∪≡∞ ↑↗↨↻⇣ ┐┼╔╘░►☺♀ ﬁ�⑀₂ἠḂӥẄɐː⍎אԱა", s)
       end
     end
-
+    end # !Sys.iswindows()
+    
     let  # send using get_body with HTML string encoded message
       message = HTML(
         """<h2>An important link to look at! ©</h2>
@@ -248,7 +250,7 @@ end
       send(server, [addr], addr, body)
 
       test_content(logfile) do s
-        m = match(r"Content-Type:\s*multipart\/mixed;\s*boundary=\"(.+)\"\n", s)
+        m = match(r"Content-Type:\s*multipart\/mixed;\s*boundary=\"(.+)\"[\r\n]+", s)
         @test m !== nothing
         boundary = m.captures[1]
         @test occursin("To: $addr", s)
@@ -256,9 +258,9 @@ end
         @test occursin(message, s)
         splt = split(s)
         ind = findall(v -> occursin("--$boundary", v), splt)
-        @test length(ind) == 6
-        @test String(base64decode(splt[ind[4]-1])) == readme
-        @test String(base64decode(splt[ind[6]-1])) == svg_str
+        @test length(ind) == 4
+        @test String(base64decode( join(string.(splt[ind[2]+11:ind[3]-1]), "\r\n") )) == readme
+        @test String(base64decode( join(string.(splt[ind[3]+11:ind[4]-1]), "\r\n") )) == svg_str
       end
       rm(filename)
     end
@@ -297,7 +299,7 @@ end
         send(server, [addr], addr, body)
   
         test_content(logfile) do s
-          m = match(r"Content-Type:\s*multipart\/mixed;\s*boundary=\"(.+)\"\n", s)
+          m = match(r"Content-Type:\s*multipart\/mixed;\s*boundary=\"(.+)\"[\r\n]+", s)
           @test m !== nothing
           boundary = m.captures[1]
           @test occursin("To: $addr", s)
@@ -317,9 +319,9 @@ end
           @test occursin("</html>", s)
           splt = split(s)
           ind = findall(v -> occursin("--$boundary", v), splt)
-          @test length(ind) == 6
-          @test String(base64decode(splt[ind[4]-1])) == readme
-          @test String(base64decode(splt[ind[6]-1])) == svg_str
+          @test length(ind) == 4
+          @test String(base64decode( join(string.(splt[ind[2]+11:ind[3]-1]), "\r\n") )) == readme
+          @test String(base64decode( join(string.(splt[ind[3]+11:ind[4]-1]), "\r\n") )) == svg_str
         end
         rm(filename)
       end

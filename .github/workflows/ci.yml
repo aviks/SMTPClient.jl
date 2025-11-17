@@ -12,36 +12,27 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        version:
-          - '1.6'
-          - 'nightly'
-        os:
-          - ubuntu-latest
-          - macOS-latest
-          - windows-latest
-        arch:
-          - x86
-          - x64
         include:
-          - os: ubuntu-latest
-        exclude:
-          # Remove some configurations from the build matrix to reduce CI time.
-          # See https://github.com/marketplace/actions/setup-julia-environment
-          # MacOS not available on x86
-          - {os: 'macOS-latest', arch: 'x86'}
-          # Don't test on all versions
-          - {os: 'macOS-latest', version: 'nightly'}
-          - {os: 'windows-latest', version: 'nightly'}
-          - {os: 'windows-latest', arch: 'x86'}
-          - {arch: 'x86', version: 'nightly'}
+          - {os: 'windows-latest', arch: 'x64',  version: 'lts'}
+          - {os: 'ubuntu-latest', arch: 'x86', version: 'lts'}
+          - {os: 'ubuntu-latest', arch: 'x64', version: 'lts'}
+          - {os: 'ubuntu-latest', arch: 'x64', version: '1.6'}
+          - {os: 'ubuntu-latest', arch: 'x64', version: '1'}
+          - {os: 'ubuntu-latest', arch: 'x64', version: 'nightly'}
     steps:
-      - uses: actions/checkout@v1
-      - uses: julia-actions/setup-julia@latest
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - run: pip install -r test/requirements.txt
+      - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
-      - uses: julia-actions/julia-buildpkg@latest
-      - uses: julia-actions/julia-runtest@latest
+      - uses: julia-actions/cache@v2
+      - uses: julia-actions/julia-buildpkg@v1
+      - uses: julia-actions/julia-runtest@v1
         with:
           coverage: false
           prefix: ${{ matrix.prefix }}
