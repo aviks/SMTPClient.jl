@@ -73,8 +73,8 @@ function get_mime_msg(message::String, ::Val{:html})
         message = join(map(c -> c > Char(0x7f) ? "&#$(codepoint(c));" : c, message_bytes), "")
     end
     msg = 
-        "Content-Type: text/html;\r\n" *
-        "Content-Transfer-Encoding: 7bit;\r\n\r\n" *
+        "Content-Type: text/html\r\n" *
+        "Content-Transfer-Encoding: 7bit\r\n\r\n" *
         "\r\n" *
         "<html>\r\n<body>" *
         message *
