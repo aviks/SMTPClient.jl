@@ -73,8 +73,8 @@ function get_mime_msg(message::String, ::Val{:html})
         message = join(map(c -> c > Char(0x7f) ? "&#$(codepoint(c));" : c, message_bytes), "")
     end
     msg = 
-        "Content-Type: text/html;\r\n" *
-        "Content-Transfer-Encoding: 7bit;\r\n\r\n" *
+        "Content-Type: text/html\r\n" *
+        "Content-Transfer-Encoding: 7bit\r\n\r\n" *
         "\r\n" *
         "<html>\r\n<body>" *
         message *
@@ -86,8 +86,9 @@ get_mime_msg(message::HTML{String}) = get_mime_msg(message.content, Val(:html))
 
 get_mime_msg(message::Markdown.MD) = get_mime_msg(Markdown.html(message), Val(:html))
 
-#Provide the message body as RFC5322 within an IO
+const multipart_subtype_map = Dict{MultipartSubType, String}(MIXED => "mixed", RELATED => "related")
 
+#Provide the message body as RFC5322 within an IO
 function get_body(
         to::Vector{String},
         from::String,
@@ -95,7 +96,8 @@ function get_body(
         msg::String;
         cc::Vector{String} = String[],
         replyto::String = "",
-        attachments::Vector{String} = String[]
+        attachments::Vector{String} = String[],
+        multipart_subtype::MultipartSubType = MIXED
     )
 
     boundary = "Julia_SMTPClient-" * join(rand(collect(vcat('0':'9','A':'Z','a':'z')), 40))
@@ -120,10 +122,10 @@ function get_body(
             "$msg\r\n\r\n"
     else
         contents *=
-            "Content-Type: multipart/mixed; boundary=\"$boundary\"\r\n" *
+            "Content-Type: multipart/$(multipart_subtype_map[multipart_subtype]); boundary=\"$boundary\"\r\n" *
             "MIME-Version: 1.0\r\n" *
             "\r\n" *
-            "This is a message with multiple parts in MIME format.\r\n" *
+            (multipart_subtype == MIXED ? "This is a message with multiple parts in MIME format.\r\n" : "") *
             "--$boundary\r\n" * 
             msg *
             "\r\n--$boundary\r\n" * 
