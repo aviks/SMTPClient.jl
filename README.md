@@ -71,7 +71,9 @@ A new function `get_body()` is available to facilitate constructing the IOBuffer
 
 The function takes four required arguments: the `to` and `from` email addresses, a `subject` string, and a `msg` string. The `to` argument is a vector of strings, containing one or more email addresses. The `msg` string can be a regular string with the contents of the message or a string in MIME format, following the [RFC5322](https://datatracker.ietf.org/doc/html/rfc5322) specifications, and constructed as a plain text, html text or markdown text.
 
-There are also the optional keyword arguments `cc`, `replyto` and `attachments`. The argument `cc` should be a vector of strings, containing one or more email addresses, while `replyto` is a string expected to contain a single argument, just like `from`. The `attachments` argument should be a list of filenames to be attached to the message.
+There are also the optional keyword arguments `cc`, `replyto`, `attachments` and `multipart_subtype`. The argument `cc` should be a vector of strings, containing one or more email addresses, while `replyto` is a string expected to contain a single argument, just like `from`. The `attachments` argument should be a list of filenames to be attached to the message.
+
+The `multipart_subtype` defaults to `MIXED`. To send an HTML message with inline images, set the `multipart_subtype` to `SMTPClient.RELATED` and reference the images in the HTML message using `<img src="cid:$(basename(attachment))">` where `attachment` is the filename of the image being attached.
 
 The attachments are encoded using `Base64.base64encode` and included in the IOBuffer variable returned by the function. The function `get_body()` takes care of identifying which type of attachments are to be included (from the filename extensions) and to properly add them according to the MIME specifications.
 
@@ -137,6 +139,24 @@ mime_msg = get_mime_msg(message)
 body = get_body(to, from, subject, mime_msg)
 resp = send(server, rcpts, sender, body, opts)
 ```
+
+#### HTML message with inline images
+
+```julia
+subject = "Julia logo"
+message = html"""
+    <p>Check out this logo!</p>
+    <p><img src="cid:julia_logo_color.png"></p>
+    <p>Isn't it cool?</p>
+"""
+attachments = ["julia_logo_color.png"]
+
+mime_msg = get_mime_msg(message)
+
+body = get_body(to, from, subject, mime_msg; attachments, multipart_subtype=SMTPClient.RELATED)
+resp = send(server, rcpts, sender, body, opts)
+```
+
 
 #### Markdown message
 

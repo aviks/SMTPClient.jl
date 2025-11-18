@@ -1,3 +1,8 @@
+"""
+Multipart subtypes used in `get_body`. Currently only MIXED and RELATED are supported.
+"""
+@enum MultipartSubType::Int8 MIXED=1 RELATED=2
+
 mutable struct SendOptions
   isSSL::Bool
   username::String
